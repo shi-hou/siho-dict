@@ -1,9 +1,11 @@
 Windows桌面划词程序，仅支持中译英和中译日，目前仅支持百度翻译
 
 ## 使用
+
 鼠标双击/拖动选择文本，按快捷键Ctrl+Alt+Z进行翻译
 
 ## TODO:
+
 - ~~点击其他地方自动隐藏~~
 - 结果窗口可拖动
 - 发音
@@ -19,7 +21,17 @@ Windows桌面划词程序，仅支持中译英和中译日，目前仅支持百�
 ## Bugs
 
 - 有时候只按Ctrl+Alt也会触发翻译，并持续这种情况
-- 在部分软件使用（如IDEA）会出现划词内容变成剪切板内容的情况，可以自行Ctrl+C复制后再按热键进行翻译（推测是因为按下快捷键触发Ctrl+C进行复制时Alt键还按着，在IDEA中Ctrl+Alt+C无法成功复制，而浏览器可以）
+- 在部分软件使用（如IDEA）会有因快捷键而产生的问题，在IDEA可先自行Ctrl+C复制再按快捷键Ctrl+Alt+Z进行翻译
 
 ## 参考
-- 获取系统代理：https://www.cnblogs.com/wuruiyang/p/15928700.html
+
+- [【Python】读取windows代理信息 ](https://www.cnblogs.com/wuruiyang/p/15928700.html)
+- [python 程序常驻任务栏右下角显示图标](https://blog.csdn.net/m0_56708264/article/details/122263286)
+
+---
+
+#### 打包成exe命令:
+
+```
+pyinstaller -F -w entry.py
+```
