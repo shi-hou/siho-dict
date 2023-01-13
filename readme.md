@@ -2,36 +2,34 @@ Windows桌面划词程序，仅支持中译英和中译日，目前仅支持百�
 
 ## 使用
 
-鼠标双击/拖动选择文本，按快捷键Ctrl+Alt+Z进行翻译
-
+鼠标双击/拖动选择文本，按快捷键(默认`Ctrl+Alt+Z`)进行翻译
+![img.png](img.png)
 ## TODO:
 
-- ~~点击其他地方自动隐藏~~
-- 结果窗口可拖动
+- 快捷键设置完善
+- 查询窗口大小根据翻译结果自适应，位置自动调整不出屏幕
 - 发音
 - 输入框进行翻译查询
-- 开机自启设置
-- ~~打开系统代理requests发送请求会报错问题~~
 - 添加Moji辞典
 - 接入Anki
 - 添加英文词典+例句
-- 美化
-- 设置界面
+- 异常处理
+- 翻译窗口添加固定不隐藏按钮
 
 ## Bugs
 
-- 有时候只按Ctrl+Alt也会触发翻译，并持续这种情况
-- 在部分软件使用（如IDEA）会有因快捷键而产生的问题，在IDEA可先自行Ctrl+C复制再按快捷键Ctrl+Alt+Z进行翻译
+- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题，如在IDEA可以先自行`Ctrl+C`复制需要翻译的文本，再按快捷键进行翻译。
 
 ## 参考
 
-- [【Python】读取windows代理信息 ](https://www.cnblogs.com/wuruiyang/p/15928700.html)
-- [python 程序常驻任务栏右下角显示图标](https://blog.csdn.net/m0_56708264/article/details/122263286)
+- [【Python】读取windows代理信息](https://www.cnblogs.com/wuruiyang/p/15928700.html)
+- [python打包exe开机自动启动的实例(windows)](http://www.qb5200.com/article/373470.html)
+- [如何在 pyqt 中自定义无边框窗口](https://www.cnblogs.com/zhiyiYo/p/14659981.html)
 
 ---
 
-#### 打包成exe命令:
+打包成exe命令:
 
 ```
-pyinstaller -F -w entry.py
+pyinstaller -F -w -i ./asserts/翻译.ico entry.py
 ```
