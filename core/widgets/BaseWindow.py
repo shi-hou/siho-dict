@@ -38,6 +38,7 @@ class BaseWindow(QMainWindow):
         self.title_bar_layout.setSpacing(0)
         title_bar_widget = QLabel(title) if title_bar_slot is None else title_bar_slot
         self.title_bar_layout.addWidget(title_bar_widget)
+        self.title_bar_layout.addSpacing(50)
         self.close_btn.setProperty('class', 'close-btn')
         self.close_btn.setFixedSize(title_bar_height, title_bar_height)
         self.close_btn.clicked.connect(self.close)
@@ -51,16 +52,9 @@ class BaseWindow(QMainWindow):
 
         self.content_layout.setContentsMargins(1, 0, 1, 10)
         self.content_widget.setLayout(self.content_layout)
-
+        self.content_widget.setProperty('class', 'content-widget')
         main_layout.addWidget(self.content_widget)
         main_widget.setLayout(main_layout)
-
-        radius_layout = QVBoxLayout()
-        radius_layout.setContentsMargins(0, 0, 0, 0)
-        radius_layout.addWidget(main_widget)
-        radius_widget = QWidget()
-        radius_widget.setLayout(radius_layout)
-        self.setCentralWidget(radius_widget)
         self.setCentralWidget(main_widget)
 
     def mousePressEvent(self, event):

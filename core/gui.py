@@ -26,12 +26,12 @@ class MainWindow(QMainWindow):
         self.tray_icon = TrayIcon()
 
         @self.tray_icon.menu_open_trans_act.triggered.connect
-        def show_trans_window():
+        def menu_open_trans_act_triggered():
             self.trans_window.content_widget.hide()
             self.trans_window.show()
 
         @self.tray_icon.activated.connect
-        def test(reason):
+        def tray_icon_activated(reason):
             if reason == QSystemTrayIcon.Trigger:
                 self.trans_window.content_widget.hide()
                 self.trans_window.show()
@@ -53,27 +53,32 @@ class TransWindow(BaseWindow):
         self.init()
 
     def init(self):
-        self.setFixedWidth(309)
-        self.setFixedHeight(500)
+        self.setFixedWidth(450)
+        self.setFixedHeight(550)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.Tool)
         self.content_widget.hide()
 
         utils.addMouseEvent(self, self.mouse_on_click, mouse_btn=mouse.LEFT, btn_type=mouse.DOWN)
 
+        @self.input_edit.editingFinished.connect
+        def input_editing_finished():
+            input_txt = self.input_edit.text().strip()
+            if input_txt == '':
+                return
+            x, y = self.x(), self.y()
+            self.trans_loader = TransLoader(self.trans_signal, x, y, input_txt=input_txt)
+            self.thread_pool.start(self.trans_loader)
+
         fold_btn = self.addTitleBarButton(icon=fr'{utils.get_app_dir_path()}\asserts\折叠面板.svg')
 
         @fold_btn.clicked.connect
         def fold_button_on_click():
-            if self.content_widget.isHidden():
-                self.content_widget.show()
-            else:
-                self.content_widget.hide()
+            self.content_widget.setHidden(not self.content_widget.isHidden())
 
         self.result_view.setProperty('class', 'trans-result-label')
         self.result_view.page().setBackgroundColor(QColor('#f2f1f6'))
         self.input_edit.setProperty('class', 'trans-input-edit')
-        # self.input_edit.setEnabled(False)  # TODO 搜索框查询翻译
         page = IPage()
         page.addWidget(self.result_view)
         self.setPage(page)
@@ -110,20 +115,24 @@ class TransWindow(BaseWindow):
 
 class TransLoader(QRunnable):
 
-    def __init__(self, trans_signal, x, y):
+    def __init__(self, trans_signal, x, y, input_txt=None):
         super().__init__()
         self.trans_signal = trans_signal
         self.x = x
         self.y = y
+        self.input_txt = input_txt
 
     def run(self):
-        former_copy = pyperclip.paste()  # 用于还原剪切板
-        keyboard.press_and_release('ctrl+c')
-        time.sleep(0.1)
-        current_txt = pyperclip.paste()
+        if self.input_txt is not None:  # 来自输入框
+            current_txt = self.input_txt
+        else:   # 来自划词
+            former_copy = pyperclip.paste()  # 用于还原剪切板
+            keyboard.press_and_release('ctrl+c')
+            time.sleep(0.1)
+            current_txt = pyperclip.paste()
+            pyperclip.copy(former_copy)  # 还原剪切版
         current_txt = current_txt.strip().replace('\n', ' ')
-        pyperclip.copy(former_copy)  # 还原剪切版
-        show_x, show_y = self.x + 10, self.y + 10  # TODO 不超出显示器
+        show_x, show_y = self.x, self.y  # TODO 不超出显示器
         trans_result = ''
         if current_txt != '':
             trans_result = baidu_trans(current_txt)
@@ -153,7 +162,7 @@ class SettingWindow(BaseWindow):
         config = utils.get_config()
         hotkey_edit = ILineEdit(config.get('hotkey'))
 
-        @hotkey_edit.textChanged.connect
+        @hotkey_edit.textEdited.connect
         def slot(text):
             config['hotkey'] = text
             utils.update_config(config)

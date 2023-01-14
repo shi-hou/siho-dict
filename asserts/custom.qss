@@ -36,9 +36,15 @@
 }
 
 BaseWindow .main-widget {
-    border: 1px solid #409EFF;
-    background-color: #f2f1f6;
+/*    background-color: #f2f1f6;*/
     border-radius: 10px;
+}
+
+BaseWindow .content-widget {
+    background-color: #f2f1f6;
+    border: 1px solid #409EFF;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 ILineEdit {
