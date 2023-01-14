@@ -4,10 +4,10 @@ import time
 import keyboard
 import mouse
 import pyperclip
-from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint
+from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QIcon, QPixmap, QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow
+from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication
 
 from core import utils
 from core.api import dict_list, baidu_trans
@@ -53,8 +53,8 @@ class TransWindow(BaseWindow):
         self.init()
 
     def init(self):
-        self.setFixedWidth(450)
-        self.setFixedHeight(550)
+        self.setFixedWidth(309)
+        self.setFixedHeight(500)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.Tool)
         self.content_widget.hide()
@@ -66,8 +66,7 @@ class TransWindow(BaseWindow):
             input_txt = self.input_edit.text().strip()
             if input_txt == '':
                 return
-            x, y = self.x(), self.y()
-            self.trans_loader = TransLoader(self.trans_signal, x, y, input_txt=input_txt)
+            self.trans_loader = TransLoader(self.trans_signal, self.frameGeometry(), input_txt)
             self.thread_pool.start(self.trans_loader)
 
         fold_btn = self.addTitleBarButton(icon=fr'{utils.get_app_dir_path()}\asserts\折叠面板.svg')
@@ -100,7 +99,7 @@ class TransWindow(BaseWindow):
 
     def on_hotkey(self):
         x, y = mouse.get_position()
-        self.trans_loader = TransLoader(self.trans_signal, x, y)
+        self.trans_loader = TransLoader(self.trans_signal, QRect(x, y, self.width(), self.height()))
         self.thread_pool.start(self.trans_loader)
 
     def mouse_on_click(self):
@@ -115,11 +114,10 @@ class TransWindow(BaseWindow):
 
 class TransLoader(QRunnable):
 
-    def __init__(self, trans_signal, x, y, input_txt=None):
+    def __init__(self, trans_signal, geometry: QRect, input_txt=None):
         super().__init__()
         self.trans_signal = trans_signal
-        self.x = x
-        self.y = y
+        self.geometry = geometry
         self.input_txt = input_txt
 
     def run(self):
@@ -132,10 +130,19 @@ class TransLoader(QRunnable):
             current_txt = pyperclip.paste()
             pyperclip.copy(former_copy)  # 还原剪切版
         current_txt = current_txt.strip().replace('\n', ' ')
-        show_x, show_y = self.x, self.y  # TODO 不超出显示器
         trans_result = ''
-        if current_txt != '':
+        if current_txt == '':   # 只显示title_bar, 不翻译
+            self.geometry.setHeight(BaseWindow.title_bar_height)
+        else:
             trans_result = baidu_trans(current_txt)
+
+        desktop_geometry = QApplication.desktop().availableGeometry()
+
+        # 0 <= show_x <= desktop_width - window_width
+        show_x = max(0, min(self.geometry.x(), desktop_geometry.width() - self.geometry.width()))
+        # 0 <= show_y <= desktop_height - window_height
+        show_y = max(0, min(self.geometry.y(), desktop_geometry.height() - self.geometry.height()))
+
         self.trans_signal.emit(current_txt, trans_result, show_x, show_y)
 
 

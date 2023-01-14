@@ -10,6 +10,8 @@ from core.widgets.IPage import IPage
 
 
 class BaseWindow(QMainWindow):
+    title_bar_height = 32
+
     def __init__(self, title="", title_bar_slot=None):
         super().__init__()
         self.content_widget = QWidget()
@@ -32,15 +34,14 @@ class BaseWindow(QMainWindow):
         main_widget.setProperty('class', 'main-widget')
 
         self.title_bar.setProperty('class', 'title-bar')
-        title_bar_height = 32
-        self.title_bar.setFixedHeight(title_bar_height)
+        self.title_bar.setFixedHeight(self.title_bar_height)
         self.title_bar_layout.setContentsMargins(20, 0, 0, 0)
         self.title_bar_layout.setSpacing(0)
         title_bar_widget = QLabel(title) if title_bar_slot is None else title_bar_slot
         self.title_bar_layout.addWidget(title_bar_widget)
         self.title_bar_layout.addSpacing(50)
         self.close_btn.setProperty('class', 'close-btn')
-        self.close_btn.setFixedSize(title_bar_height, title_bar_height)
+        self.close_btn.setFixedSize(self.title_bar_height, self.title_bar_height)
         self.close_btn.clicked.connect(self.close)
         self.title_bar_layout.addWidget(self.close_btn, alignment=Qt.AlignRight)
         self.title_bar.setLayout(self.title_bar_layout)
