@@ -62,14 +62,17 @@ class TransWindow(BaseWindow):
     def __init__(self):
         self.input_edit = QLineEdit()
         super().__init__(title_bar_slot=self.input_edit)
+        self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('固定_line.svg'))
         self.result_view = QWebEngineView()
-        self.trans_signal.connect(self.show_trans)
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(1)
         self.trans_loader = None
+        self.fix_not_hidden = False
         self.init()
 
     def init(self):
+        self.trans_signal.connect(self.show_trans)
+
         self.setFixedWidth(309)
         self.setFixedHeight(500)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
@@ -95,6 +98,10 @@ class TransWindow(BaseWindow):
         def fold_button_on_click():
             self.content_widget.setHidden(not self.content_widget.isHidden())
 
+        @self.fix_btn.clicked.connect
+        def fix_button_on_click():
+            self.setFixNotHidden(not self.fix_not_hidden)
+
         self.result_view.setProperty('class', 'trans-result-label')
         self.result_view.setHtml('')
         self.result_view.page().setBackgroundColor(QColor('#f2f1f6'))
@@ -104,6 +111,7 @@ class TransWindow(BaseWindow):
         self.setPage(page)
 
     def hide(self) -> None:
+        self.setFixNotHidden(False)
         self.input_edit.clear()
         self.result_view.setHtml('')
         self.content_widget.hide()
@@ -115,7 +123,8 @@ class TransWindow(BaseWindow):
         self.input_edit.clearFocus()
         self.content_widget.setHidden(input_text == '')
         self.result_view.setHtml(trans_result)
-        self.move(x, y)
+        if not self.fix_not_hidden:
+            self.move(x, y)
         self.show()
 
     def on_hotkey(self):
@@ -124,6 +133,8 @@ class TransWindow(BaseWindow):
         self.thread_pool.start(self.trans_loader)
 
     def mouse_on_click(self):
+        if self.fix_not_hidden:
+            return
         x, y = mouse.get_position()
         if not self.isHidden() and (
                 QPoint(x, y) not in self.geometry()
@@ -131,6 +142,10 @@ class TransWindow(BaseWindow):
                         self.content_widget.isHidden()
                         and QPoint(x - self.x(), y - self.y()) not in self.title_bar.geometry())):
             self.hide()
+
+    def setFixNotHidden(self, value: bool):
+        self.fix_not_hidden = value
+        self.fix_btn.setIcon(QIcon(QPixmap(utils.get_resources_path('固定_fill.svg' if value else '固定_line.svg'))))
 
 
 class TransLoader(QRunnable):
