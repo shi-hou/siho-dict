@@ -79,6 +79,7 @@ class TransWindow(BaseWindow):
             self.content_widget.setHidden(not self.content_widget.isHidden())
 
         self.result_view.setProperty('class', 'trans-result-label')
+        self.result_view.setHtml('')
         self.result_view.page().setBackgroundColor(QColor('#f2f1f6'))
         self.input_edit.setProperty('class', 'trans-input-edit')
         page = IPage()
@@ -97,7 +98,6 @@ class TransWindow(BaseWindow):
         self.input_edit.clearFocus()
         self.content_widget.setHidden(input_text == '')
         self.result_view.setHtml(trans_result)
-        print(trans_result)
         self.move(x, y)
         self.show()
 
