@@ -1,8 +1,9 @@
 import sys
+import traceback
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QAbstractEventDispatcher, QAbstractNativeEventFilter
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 from pyqtkeybind import keybinder
 
 from core import utils
@@ -19,20 +20,25 @@ class WinEventFilter(QAbstractNativeEventFilter):
         return ret, 0
 
 
+def except_hook(exc_type, exc_value, exc_tb):
+    tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    print(tb)
+    QMessageBox.critical(None, "出现异常", tb)
+
+
+sys.excepthook = except_hook
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)
-dir_path = utils.get_app_dir_path()
-app.setStyleSheet(utils.read_qss_file(fr'{dir_path}\asserts\custom.qss'))
-QtGui.QFontDatabase.addApplicationFont(fr'{dir_path}\asserts\PingFang SC Medium.ttf')
-
+app.setStyleSheet(utils.read_qss_file(utils.get_resources_path('custom.qss')))
+QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('PingFang SC Medium.ttf'))
 window = MainWindow()
 keybinder.init()
 unregistered = False
-keybinder.register_hotkey(window.winId(), utils.get_config().get('hotkey', 'Ctrl+Alt+Z'), window.trans_window.on_hotkey)
+hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
+keybinder.register_hotkey(window.winId(), hotkey, window.trans_window.on_hotkey)
 win_event_filter = WinEventFilter(keybinder)
 event_dispatcher = QAbstractEventDispatcher.instance()
 event_dispatcher.installNativeEventFilter(win_event_filter)
 app.exec_()
-# print('test---------------------------')
-# keybinder.unregister_hotkey(window.winId(), "Ctrl+Alt+Z")
+keybinder.unregister_hotkey(window.winId(), hotkey)

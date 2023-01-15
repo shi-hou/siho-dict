@@ -26,7 +26,7 @@ class BaseWindow(QMainWindow):
     def init_window(self, title="", title_bar_slot=None):
 
         self.setWindowTitle(title)
-        self.setWindowIcon(QIcon(QPixmap(fr'{utils.get_app_dir_path()}\asserts\翻译.svg')))
+        self.setWindowIcon(QIcon(QPixmap(utils.get_resources_path('翻译.svg'))))
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 

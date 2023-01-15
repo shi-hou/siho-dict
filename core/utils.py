@@ -57,6 +57,10 @@ def get_app_dir_path():
     return os.path.dirname(os.path.abspath(sys.argv[0]))
 
 
+def get_resources_path(resource_name=""):
+    return os.path.join(get_app_dir_path(), "assets", resource_name)
+
+
 def get_app_exe_path():
     return os.path.realpath(os.path.abspath(sys.argv[0]))
 
@@ -110,7 +114,6 @@ def set_auto_run(new_value: bool) -> bool:
             winreg.SetValueEx(REG_KEY_RUN, AUTO_RUN_NAME, 0, winreg.REG_SZ, exe_path)
         elif has_auto_run:
             winreg.DeleteValue(REG_KEY_RUN, AUTO_RUN_NAME)
-        # winreg.CloseKey(REG_KEY_RUN)
         return True
     except Exception as err:
         print("修改开机自启设置异常", err)
@@ -119,7 +122,7 @@ def set_auto_run(new_value: bool) -> bool:
 
 def get_config():
     default_config = {
-        'hotkey': 'Alt+Q',
+        'hotkey': 'Ctrl+Alt+Z',
         'dict': {
             dict_list[0].get('name'): {
                 'on': True
@@ -127,7 +130,7 @@ def get_config():
         }
     }
     try:
-        config_file = os.path.join(get_app_dir_path(), 'config.json')
+        config_file = get_resources_path('config.json')
         with open(config_file, 'r') as f:
             config = json.loads(f.read())
         if not config:
@@ -140,6 +143,6 @@ def get_config():
 def update_config(config: dict):
     origin = get_config()
     origin.update(config)
-    config_file = os.path.join(get_app_dir_path(), 'config.json')
+    config_file = get_resources_path('config.json')
     with open(config_file, 'w') as f:
         json.dump(origin, f, sort_keys=True, indent=2)

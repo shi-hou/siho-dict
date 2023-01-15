@@ -1,5 +1,5 @@
 import sys
-import time
+from time import sleep
 
 import keyboard
 import mouse
@@ -63,13 +63,14 @@ class TransWindow(BaseWindow):
 
         @self.input_edit.editingFinished.connect
         def input_editing_finished():
+            print('editingFinished')
             input_txt = self.input_edit.text().strip()
             if input_txt == '':
                 return
             self.trans_loader = TransLoader(self.trans_signal, self.frameGeometry(), input_txt)
             self.thread_pool.start(self.trans_loader)
 
-        fold_btn = self.addTitleBarButton(icon=fr'{utils.get_app_dir_path()}\asserts\折叠面板.svg')
+        fold_btn = self.addTitleBarButton(icon=utils.get_resources_path('折叠面板.svg'))
 
         @fold_btn.clicked.connect
         def fold_button_on_click():
@@ -94,6 +95,7 @@ class TransWindow(BaseWindow):
         self.input_edit.clearFocus()
         self.content_widget.setHidden(input_text == '')
         self.result_view.setHtml(trans_result)
+        print(trans_result)
         self.move(x, y)
         self.show()
 
@@ -123,15 +125,15 @@ class TransLoader(QRunnable):
     def run(self):
         if self.input_txt is not None:  # 来自输入框
             current_txt = self.input_txt
-        else:   # 来自划词
+        else:  # 来自划词
             former_copy = pyperclip.paste()  # 用于还原剪切板
             keyboard.press_and_release('ctrl+c')
-            time.sleep(0.1)
+            sleep(0.1)
             current_txt = pyperclip.paste()
             pyperclip.copy(former_copy)  # 还原剪切版
         current_txt = current_txt.strip().replace('\n', ' ')
         trans_result = ''
-        if current_txt == '':   # 只显示title_bar, 不翻译
+        if current_txt == '':  # 只显示title_bar, 不翻译
             self.geometry.setHeight(BaseWindow.title_bar_height)
         else:
             trans_result = baidu_trans(current_txt)
@@ -178,7 +180,6 @@ class SettingWindow(BaseWindow):
 
         setting_page.addWidget(basic_setting_group)
 
-        dir_path = utils.get_app_dir_path()
         dict_setting_group = IGroup('词典设置', '目前仅支持百度翻译，因此暂时无法设置词典，后续将支持Moji辞書、必应词典等（咕咕咕）')
         dict_settings = config.get('dict', {dict_list[0]['name']: {'on': True}})
         for d in dict_list:
@@ -198,7 +199,7 @@ class SettingWindow(BaseWindow):
                 config['dict'] = dict_settings
                 utils.update_config(config)
 
-            dict_setting_group.addRow(d.get('title'), switch, fr'{dir_path}\asserts\{d.get("icon")}')
+            dict_setting_group.addRow(d.get('title'), switch, utils.get_resources_path(d.get('icon')))
 
         setting_page.addWidget(dict_setting_group)
 
@@ -215,13 +216,12 @@ class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
         self.setting_window = None
-        dir_path = utils.get_app_dir_path()
-        self.setIcon(QIcon(QPixmap(fr'{dir_path}\asserts\翻译.svg')))
+        self.setIcon(QIcon(QPixmap(utils.get_resources_path('翻译.svg'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
         self.menu_open_trans_act = self.menu.addAction('显示翻译窗口')
-        self.menu_open_setting_act = self.menu.addAction('设置', fr'{dir_path}\asserts\设置.svg')
-        self.menu_quit_act = self.menu.addAction('退出', fr'{dir_path}\asserts\退出.svg')
+        self.menu_open_setting_act = self.menu.addAction('设置', utils.get_resources_path('设置.svg'))
+        self.menu_quit_act = self.menu.addAction('退出', utils.get_resources_path('退出.svg'))
         self.setContextMenu(self.menu)
 
         @self.menu_open_setting_act.triggered.connect
@@ -229,8 +229,9 @@ class TrayIcon(QSystemTrayIcon):
             if self.setting_window is None:
                 self.setting_window = SettingWindow()
             self.setting_window.show()
+            self.setting_window.activateWindow()
 
         @self.menu_quit_act.triggered.connect
         def exit_app():
             self.hide()
-            sys.exit()
+            QApplication.exit()
