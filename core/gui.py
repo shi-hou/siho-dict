@@ -173,9 +173,9 @@ class TransLoader(QRunnable):
         desktop_geometry = QApplication.desktop().availableGeometry()
 
         # 0 <= show_x <= desktop_width - window_width
-        show_x = max(0, min(self.geometry.x() + 10, desktop_geometry.width() - self.geometry.width()))
+        show_x = max(0, min(self.geometry.x(), desktop_geometry.width() - self.geometry.width()))
         # 0 <= show_y <= desktop_height - window_height
-        show_y = max(0, min(self.geometry.y() + 10, desktop_geometry.height() - self.geometry.height()))
+        show_y = max(0, min(self.geometry.y(), desktop_geometry.height() - self.geometry.height()))
 
         self.trans_signal.emit(current_txt, result_dict, show_x, show_y)
 
