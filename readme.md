@@ -4,19 +4,18 @@ Windows桌面划词程序，仅支持中译英和中译日，目前仅支持百�
 
 鼠标双击/拖动选择文本，按快捷键(默认`Ctrl+Alt+Z`)进行翻译
 ![img.png](img.png)
+
 ## TODO:
 
-- 快捷键设置完善
 - 发音
 - 添加Moji辞典
 - 接入Anki
 - 添加英文词典+例句
-- 异常处理
 - 翻译窗口添加固定不隐藏按钮
 
 ## Bugs
 
-- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题，如在IDEA可以先自行`Ctrl+C`复制需要翻译的文本，再按快捷键进行翻译。
+- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题，如在IDEA可以先自行`Ctrl+C`复制需要翻译的文本，再按快捷键即可翻译。
 
 ## 参考
 
@@ -29,5 +28,5 @@ Windows桌面划词程序，仅支持中译英和中译日，目前仅支持百�
 打包成exe命令:
 
 ```
-pyinstaller -F -w -i ./asserts/翻译.ico entry.py
+pyinstaller -i "assets\翻译.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
 ```
