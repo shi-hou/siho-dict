@@ -130,7 +130,7 @@ def get_config():
         }
     }
     try:
-        config_file = get_resources_path('config.json')
+        config_file = os.path.join(get_app_dir_path(), 'config.json')
         with open(config_file, 'r') as f:
             config = json.loads(f.read())
         if not config:
@@ -143,6 +143,6 @@ def get_config():
 def update_config(config: dict):
     origin = get_config()
     origin.update(config)
-    config_file = get_resources_path('config.json')
+    config_file = os.path.join(get_app_dir_path(), 'config.json')
     with open(config_file, 'w') as f:
         json.dump(origin, f, sort_keys=True, indent=2)
