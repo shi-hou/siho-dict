@@ -125,11 +125,6 @@ IPage QScrollBar::add-page:vertical, IPage QScrollBar::sub-page:vertical {
     border-radius: 15px;
 }
 
-.trans-result-label {
-    font-family: "PingFang SC Medium";
-    font-size: 16px;
-}
-
 .trans-input-edit {
     font-family: "PingFang SC Medium";
     border-width: 0;

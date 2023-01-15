@@ -5,8 +5,7 @@ import keyboard
 import mouse
 import pyperclip
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
-from PyQt5.QtGui import QIcon, QPixmap, QColor
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication
 from pyqtkeybind import keybinder
 
@@ -18,6 +17,7 @@ from core.widgets.ILineEdit import ILineEdit
 from core.widgets.IMenu import IMenu
 from core.widgets.IPage import IPage
 from core.widgets.ISwitch import ISwitch
+from core.widgets.ResultWidget import ResultWidget, AudioButton
 
 
 class MainWindow(QMainWindow):
@@ -57,13 +57,14 @@ class MainWindow(QMainWindow):
 
 
 class TransWindow(BaseWindow):
-    trans_signal = pyqtSignal(str, str, int, int)
+    trans_signal = pyqtSignal(str, dict, int, int)
 
     def __init__(self):
         self.input_edit = QLineEdit()
         super().__init__(title_bar_slot=self.input_edit)
         self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('固定_line.svg'))
-        self.result_view = QWebEngineView()
+        self.result_widget = ResultWidget(audio_btn_color=AudioButton.BLUE)
+        self.audio_btn_color = None
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(1)
         self.trans_loader = None
@@ -102,27 +103,24 @@ class TransWindow(BaseWindow):
         def fix_button_on_click():
             self.setFixNotHidden(not self.fix_not_hidden)
 
-        self.result_view.setProperty('class', 'trans-result-label')
-        self.result_view.setHtml('')
-        self.result_view.page().setBackgroundColor(QColor('#f2f1f6'))
         self.input_edit.setProperty('class', 'trans-input-edit')
         page = IPage()
-        page.addWidget(self.result_view)
+        page.addWidget(self.result_widget)
         self.setPage(page)
 
     def hide(self) -> None:
         self.setFixNotHidden(False)
         self.input_edit.clear()
-        self.result_view.setHtml('')
         self.content_widget.hide()
         BaseWindow.hide(self)
 
-    @pyqtSlot(str, str, int, int)
-    def show_trans(self, input_text, trans_result, x, y):
+    @pyqtSlot(str, dict, int, int)
+    def show_trans(self, input_text, result_dict, x, y):
+        print('Ohhhh')
         self.input_edit.setText(input_text)
         self.input_edit.clearFocus()
         self.content_widget.setHidden(input_text == '')
-        self.result_view.setHtml(trans_result)
+        self.result_widget.setResult(result_dict)
         if not self.fix_not_hidden:
             self.move(x, y)
         self.show()
@@ -166,11 +164,11 @@ class TransLoader(QRunnable):
             current_txt = pyperclip.paste()
             pyperclip.copy(former_copy)  # 还原剪切版
         current_txt = current_txt.strip().replace('\n', ' ')
-        trans_result = ''
         if current_txt == '':  # 只显示title_bar, 不翻译
             self.geometry.setHeight(BaseWindow.title_bar_height)
+            result_dict = {}
         else:
-            trans_result = baidu_trans(current_txt)
+            result_dict = baidu_trans(current_txt)
 
         desktop_geometry = QApplication.desktop().availableGeometry()
 
@@ -179,7 +177,7 @@ class TransLoader(QRunnable):
         # 0 <= show_y <= desktop_height - window_height
         show_y = max(0, min(self.geometry.y() + 10, desktop_geometry.height() - self.geometry.height()))
 
-        self.trans_signal.emit(current_txt, trans_result, show_x, show_y)
+        self.trans_signal.emit(current_txt, result_dict, show_x, show_y)
 
 
 class SettingWindow(BaseWindow):

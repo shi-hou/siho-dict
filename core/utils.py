@@ -47,7 +47,11 @@ def get_proxies():
     return {'https': url} if url else None
 
 
-def post(url, data=None, json=None):
+def request_get(url, params=None):
+    return requests.get(url, params)
+
+
+def request_post(url, data=None, json=None):
     return requests.post(url, data, json, headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
     }, proxies=get_proxies())
