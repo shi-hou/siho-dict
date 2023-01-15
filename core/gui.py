@@ -63,12 +63,12 @@ class TransWindow(BaseWindow):
 
         @self.input_edit.editingFinished.connect
         def input_editing_finished():
-            print('editingFinished')
-            input_txt = self.input_edit.text().strip()
-            if input_txt == '':
-                return
-            self.trans_loader = TransLoader(self.trans_signal, self.frameGeometry(), input_txt)
-            self.thread_pool.start(self.trans_loader)
+            if self.input_edit.isModified():
+                input_txt = self.input_edit.text().strip()
+                if input_txt == '':
+                    return
+                self.trans_loader = TransLoader(self.trans_signal, self.frameGeometry(), input_txt)
+                self.thread_pool.start(self.trans_loader)
 
         fold_btn = self.addTitleBarButton(icon=utils.get_resources_path('折叠面板.svg'))
 
