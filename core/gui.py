@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoin
 from PyQt5.QtGui import QIcon, QPixmap, QColor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication
+from pyqtkeybind import keybinder
 
 from core import utils
 from core.api import dict_list, baidu_trans
@@ -24,6 +25,22 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.trans_window = TransWindow()
         self.tray_icon = TrayIcon()
+        self.setting_window = SettingWindow()
+
+        @self.tray_icon.menu_open_setting_act.triggered.connect
+        def show_setting_window():
+            self.setting_window.show()
+            self.setting_window.activateWindow()
+
+        @self.setting_window.hotkey_edit.editingFinished.connect
+        def slot():
+            if self.setting_window.hotkey_edit.isModified():
+                original_hotkey = self.setting_window.config.get('hotkey', 'Ctrl+Alt+Z')
+                new_hotkey = self.setting_window.hotkey_edit.text()
+                keybinder.unregister_hotkey(self.winId(), original_hotkey)
+                keybinder.register_hotkey(self.winId(), new_hotkey, self.trans_window.on_hotkey)
+                self.setting_window.config['hotkey'] = new_hotkey
+                utils.update_config(self.setting_window.config)
 
         @self.tray_icon.menu_open_trans_act.triggered.connect
         def menu_open_trans_act_triggered():
@@ -153,6 +170,8 @@ class TransLoader(QRunnable):
 class SettingWindow(BaseWindow):
     def __init__(self):
         super().__init__(title='设置')
+        self.config = utils.get_config()
+        self.hotkey_edit = ILineEdit()
         self.init()
 
     def init(self):
@@ -170,20 +189,13 @@ class SettingWindow(BaseWindow):
 
         basic_setting_group.addRow('开机自启', auto_run_switch)
 
-        config = utils.get_config()
-        hotkey_edit = ILineEdit(config.get('hotkey'))
-
-        @hotkey_edit.textEdited.connect
-        def slot(text):
-            config['hotkey'] = text
-            utils.update_config(config)
-
-        basic_setting_group.addRow('热键', hotkey_edit)
+        self.hotkey_edit.setText(self.config.get('hotkey', 'Ctrl+Alt+Z'))
+        basic_setting_group.addRow('热键', self.hotkey_edit)
 
         setting_page.addWidget(basic_setting_group)
 
         dict_setting_group = IGroup('词典设置', '目前仅支持百度翻译，因此暂时无法设置词典，后续将支持Moji辞書、必应词典等（咕咕咕）')
-        dict_settings = config.get('dict', {dict_list[0]['name']: {'on': True}})
+        dict_settings = self.config.get('dict', {dict_list[0]['name']: {'on': True}})
         for d in dict_list:
             name = d.get('name')
             enable = d.get('enable', False)
@@ -198,8 +210,8 @@ class SettingWindow(BaseWindow):
                 one_dict_setting = dict_settings.get(dict_name, {})
                 one_dict_setting['on'] = toggled_switch.isToggled()
                 dict_settings[dict_name] = one_dict_setting
-                config['dict'] = dict_settings
-                utils.update_config(config)
+                self.config['dict'] = dict_settings
+                utils.update_config(self.config)
 
             dict_setting_group.addRow(d.get('title'), switch, utils.get_resources_path(d.get('icon')))
 
@@ -217,7 +229,6 @@ class SettingWindow(BaseWindow):
 class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
-        self.setting_window = None
         self.setIcon(QIcon(QPixmap(utils.get_resources_path('翻译.svg'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
@@ -225,13 +236,6 @@ class TrayIcon(QSystemTrayIcon):
         self.menu_open_setting_act = self.menu.addAction('设置', utils.get_resources_path('设置.svg'))
         self.menu_quit_act = self.menu.addAction('退出', utils.get_resources_path('退出.svg'))
         self.setContextMenu(self.menu)
-
-        @self.menu_open_setting_act.triggered.connect
-        def show_setting_window():
-            if self.setting_window is None:
-                self.setting_window = SettingWindow()
-            self.setting_window.show()
-            self.setting_window.activateWindow()
 
         @self.menu_quit_act.triggered.connect
         def exit_app():
