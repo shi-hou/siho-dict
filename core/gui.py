@@ -59,10 +59,12 @@ class TransWindow(BaseWindow):
         self.setWindowFlag(Qt.Tool)
         self.content_widget.hide()
 
+        self.close_btn.clicked.connect(self.hide)
+
         utils.addMouseEvent(self, self.mouse_on_click, mouse_btn=mouse.LEFT, btn_type=mouse.DOWN)
 
-        @self.input_edit.editingFinished.connect
-        def input_editing_finished():
+        @self.input_edit.returnPressed.connect
+        def input_return_pressed():
             if self.input_edit.isModified():
                 input_txt = self.input_edit.text().strip()
                 if input_txt == '':
