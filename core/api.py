@@ -39,11 +39,6 @@ URL_VOICE = 'https://fanyi.baidu.com/gettts'
     type: 2
     text: 'xxx yyy zzz', 
     trans: '喔喔喔喔'
-    voice: [
-        {
-            url: 'url'
-        }
-    ]
 }
 '''
 
@@ -88,17 +83,12 @@ def baidu_trans(text):
         result_body = {
             'type': 2,
             'text': text,
-            'trans': resp['data'][0]['dst'],
-            'voice': [
-                {
-                    'url': f'https://fanyi.baidu.com/gettts?lan=en&text={text}&spd=3&source=web'
-                }
-            ]
+            'trans': resp['data'][0]['dst']
         }
     return result_body
 
 
-def baidu_get_voice(text, lan='en'):
+def baidu_get_voice(text, lan):
     return utils.request_post(URL_VOICE, data={
         'lan': lan,
         'text': text,
