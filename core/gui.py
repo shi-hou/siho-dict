@@ -6,7 +6,7 @@ import mouse
 import pyperclip
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication
+from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout
 from pyqtkeybind import keybinder
 
 from core import utils
@@ -105,7 +105,9 @@ class TransWindow(BaseWindow):
 
         self.input_edit.setProperty('class', 'trans-input-edit')
         page = IPage()
-        page.addWidget(self.result_widget)
+        layout = QVBoxLayout()
+        layout.addWidget(self.result_widget)
+        page.addLayout(layout)
         self.setPage(page)
 
     def hide(self) -> None:
