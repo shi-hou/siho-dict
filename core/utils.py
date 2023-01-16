@@ -3,11 +3,10 @@ import os
 import sys
 import winreg
 
+import langid
 import mouse
 import requests
 from PyQt5.QtCore import QObject, pyqtSignal
-
-from core.api import dict_list
 
 REG_KEY_INTERNET_SETTINGS = winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER,
                                              r'Software\Microsoft\Windows\CurrentVersion\Internet Settings',
@@ -125,22 +124,22 @@ def set_auto_run(new_value: bool) -> bool:
 
 
 def get_config():
-    default_config = {
-        'hotkey': 'Ctrl+Alt+Z',
-        'dict': {
-            dict_list[0].get('name'): {
-                'on': True
-            }
-        }
-    }
+    # default_config = {
+    #     'hotkey': 'Ctrl+Alt+Z',
+    #     'dict': {
+    #         dict_list[0].get('name'): {
+    #             'on': True
+    #         }
+    #     }
+    # }
     try:
         config_file = os.path.join(get_app_dir_path(), 'config.json')
         with open(config_file, 'r') as f:
             config = json.loads(f.read())
         if not config:
-            config = default_config
+            config = {}
     except IOError:
-        config = default_config
+        config = {}
     return config
 
 
@@ -150,3 +149,7 @@ def update_config(config: dict):
     config_file = os.path.join(get_app_dir_path(), 'config.json')
     with open(config_file, 'w') as f:
         json.dump(origin, f, sort_keys=True, indent=2)
+
+
+def check_language(string: str) -> str:
+    return langid.classify(string)[0]
