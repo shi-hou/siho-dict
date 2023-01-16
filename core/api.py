@@ -44,16 +44,16 @@ URL_VOICE = 'https://fanyi.baidu.com/gettts'
 
 
 def baidu_lang_detect(text):
-    lan = utils.request_post(URL_LANG_DETECT, data={'query': text}).json()['lan']
-    if lan != 'en':
-        lan = 'jp'
-    return lan
+    return utils.request_post(URL_LANG_DETECT, data={'query': text}).json()['lan']
 
 
 def baidu_trans(text):
+    from_lang = baidu_lang_detect(text)
+    to_lang = 'zh' if from_lang != 'zh' else 'en'
+    print(text,': ', from_lang, '->', to_lang)
     resp = utils.request_post(URL_TRANS, data={
         'from': baidu_lang_detect(text),
-        'to': 'zh',
+        'to': to_lang,
         'query': text,
         'source': 'txt'
     }).json()
@@ -63,7 +63,7 @@ def baidu_trans(text):
         result_body = {'type': 1, 'text': text}
         result = json.loads(resp['result'])
         voice = result.get('voice')
-        if voice is not None:
+        if voice is not None and from_lang == 'en':
             result_body['voice'] = [{
                 'pron': f"英{voice[0]['en_phonic']}",
                 'url': f'https://fanyi.baidu.com/gettts?lan=uk&text={text}&spd=3&source=web'
