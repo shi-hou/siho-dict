@@ -32,6 +32,8 @@ app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)
 app.setStyleSheet(utils.read_qss_file(utils.get_resources_path('global-style.qss')))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('PingFang SC Medium.ttf'))
+QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('PingFang SC Regular.ttf'))
+QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('HiraMinProN-W6.ttf'))
 window = MainWindow()
 keybinder.init()
 unregistered = False

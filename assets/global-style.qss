@@ -114,7 +114,7 @@ IPage QScrollBar::add-page:vertical, IPage QScrollBar::sub-page:vertical {
 }
 
 .i-group-title, .i-group-explain {
-    font-family: "PingFang SC Medium";
+    font-family: "PingFang SC Regular";
     color: #9a9a9a;
     font-size: 16px;
     padding: 0 20px;
@@ -136,7 +136,7 @@ IPage QScrollBar::add-page:vertical, IPage QScrollBar::sub-page:vertical {
 IMenu {
     background-color: #EFEFF1;
     width: 200px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: none;
 }
 
@@ -146,10 +146,10 @@ IMenu::separator {
 }
 
 .i-menu-item-text {
-    font-family: "PingFang SC Medium";
+    font-family: "PingFang SC Regular";
     color: black;
-    font-size: 16px;
-    padding-left:20px;
+    font-size: 13px;
+    padding-left:16px;
 }
 
 .i-menu-item:hover, .i-menu-item-first:hover, .i-menu-item-last:hover {
@@ -161,13 +161,13 @@ IMenu::separator {
 }
 
 .i-menu-item-first {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .i-menu-item-last {
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 ResultWidget .title-label {

@@ -9,10 +9,9 @@ class IMenu(QMenu):
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setWindowFlag(Qt.NoDropShadowWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setWindowOpacity(0.5)
 
     def addAction(self, text: str = '', icon_path: str = None) -> QAction:
-        height = 35
+        height = 27
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         text_label = QLabel(text)
@@ -21,12 +20,12 @@ class IMenu(QMenu):
         layout.addStretch(1)
         if icon_path is not None:
             icon_label = QLabel()
-            icon_label.setFixedWidth(20)
-            icon_label.setFixedHeight(20)
+            icon_label.setFixedWidth(15)
+            icon_label.setFixedHeight(15)
             icon_path = icon_path.replace('\\', '/')  # url()用“\”会不生效
             icon_label.setStyleSheet(f'border-image: url({icon_path});')
             layout.addWidget(icon_label)
-        layout.addSpacing(20)
+        layout.addSpacing(16)
         widget = QWidget()
         widget.setFixedHeight(height)
         widget.setLayout(layout)
