@@ -3,13 +3,13 @@ from time import sleep
 import keyboard
 import mouse
 import pyperclip
-from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QThread
+from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout
 from pyqtkeybind import keybinder
 
 from core import utils
-from core.dicts import dicts, Dict
+from core.dicts import Dict, dicts
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, ResultListWidget
 
 
@@ -90,6 +90,7 @@ class TransWindow(BaseWindow):
 
         @self.input_edit.returnPressed.connect
         def input_return_pressed():
+            self.stopLoad()
             if self.input_edit.isModified():
                 self.result_list_widget.clear()
                 input_txt = self.input_edit.text().strip()
@@ -120,6 +121,7 @@ class TransWindow(BaseWindow):
         self.input_edit.clear()
         self.content_widget.hide()
         BaseWindow.hide(self)
+        self.stopLoad()
 
     @pyqtSlot(str, int, int)
     def show_window(self, input_text, x, y):
@@ -143,8 +145,7 @@ class TransWindow(BaseWindow):
         self.result_list_widget.widget_list[index].setResult(result_dict)
 
     def on_hotkey(self):
-        for loader in self.trans_loaders:
-            loader.stop()
+        self.stopLoad()
         self.result_list_widget.clear()
         x, y = mouse.get_position()
         self.window_show_worker = self.WindowShowWorker(self.show_signal, QRect(x, y, self.width(), self.height()))
@@ -165,6 +166,12 @@ class TransWindow(BaseWindow):
     def setFixNotHidden(self, value: bool):
         self.fix_not_hidden = value
         self.fix_btn.setIcon(QIcon(QPixmap(utils.get_resources_path('固定_fill.svg' if value else '固定_line.svg'))))
+
+    def stopLoad(self):
+        for loader in self.trans_loaders:
+            loader.stop()
+        self.trans_loaders = []
+        self.thread_pool.clear()
 
     class WindowShowWorker(QRunnable):
         def __init__(self, show_signal, geometry: QRect, input_txt=None):
