@@ -30,7 +30,7 @@ sys.excepthook = except_hook
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)
-app.setStyleSheet(utils.read_qss_file(utils.get_resources_path('custom.qss')))
+app.setStyleSheet(utils.read_qss_file(utils.get_resources_path('global-style.qss')))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('PingFang SC Medium.ttf'))
 window = MainWindow()
 keybinder.init()

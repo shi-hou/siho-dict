@@ -1,3 +1,4 @@
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from core import utils
@@ -49,20 +50,32 @@ class ResultListWidget(QWidget):
             self.init()
 
         def init(self):
+            if self.dictionary.style_file:
+                self.setStyleSheet(utils.read_qss_file(utils.get_resources_path(self.dictionary.style_file)))
+
+            self.setAttribute(Qt.WA_StyledBackground)
+
             title_layout = QHBoxLayout()
-            title_layout.addWidget(QLabel(self.dictionary.title))
+
             icon_label = QLabel()
             icon_label.setFixedHeight(15)
             icon_label.setFixedWidth(15)
             icon = utils.get_resources_path(self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
             icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 3px;')
             title_layout.addWidget(icon_label)
+
+            title_label = QLabel(self.dictionary.title)
+            title_label.setProperty('class', 'title-label')
+            title_layout.addWidget(title_label)
+
             title_layout.addStretch(1)
             self.layout.addLayout(title_layout)
 
             self.text_label.setWordWrap(True)
+            self.text_label.setProperty('class', 'text-label')
             self.layout.addWidget(self.text_label)
             self.trans_result_label.setWordWrap(True)
+            self.trans_result_label.setProperty('class', 'trans-result-label')
             self.layout.addWidget(self.trans_result_label)
             self.layout.addStretch(1)
             self.setLayout(self.layout)
@@ -87,21 +100,13 @@ class ResultListWidget(QWidget):
                 trans_result = ''
                 for pre in result_dict.get('pre'):
                     trans_result += f"{pre.get('title')}\n"
-                    trans_result += f"{self.dictionary.delimiter.join(pre.get('trans'))}\n"
+                    trans_result += f"{self.dictionary.delimiter.join(pre.get('trans'))}\n\n"
                 self.trans_result_label.setText(trans_result)
             else:
                 self.trans_result_label.setText(result_dict.get('trans'))
 
         def loading(self):
-            self.text_label.setText('加载中...')
-            for btn in self.audio_buttons:
-                self.layout.removeWidget(btn)
-            self.audio_buttons = []
-            self.trans_result_label.clear()
+            self.setResult(Dict.message_result('加载中...'))
 
         def clear(self):
-            self.text_label.clear()
-            for btn in self.audio_buttons:
-                self.layout.removeWidget(btn)
-            self.audio_buttons = []
-            self.trans_result_label.clear()
+            self.setResult(Dict.message_result())

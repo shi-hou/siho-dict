@@ -16,7 +16,7 @@ class AudioButton(QWidget):
         player.setVolume(50)
 
         label = QLabel(text)
-
+        label.setProperty('class', 'pron-label')
         btn = QPushButton()
         btn.setIcon(QIcon(QPixmap(utils.get_resources_path(icon))))
         btn.setStyleSheet('border: none;')

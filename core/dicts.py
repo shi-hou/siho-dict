@@ -195,6 +195,7 @@ dict_list = [
         'audio-icon': 'audio-blue.svg',
         'delimiter': ';',  # 同一词性中各个释义之间的连接符
         'func': baidu_trans,  # 函数参数为(text, from_lang), 即原文和原文语种, 返回为dict类型, 结构见上
+        'style-file': 'baidu.qss',
     },
     {
         'name': 'moji-search',
@@ -205,6 +206,7 @@ dict_list = [
         'audio-icon': 'moji-voice.webp',
         'delimiter': '\n',
         'func': moji_search,
+        'style-file': 'moji.qss'
     }
 ]
 
@@ -233,7 +235,8 @@ class Dicts:
             audio_icon = d.get('audio-icon')
             delimiter = d.get('delimiter', ';')
             func = d.get('func')
-            dictionary = Dict(name, able, on, title, lang, icon, audio_icon, delimiter, func)
+            style_file = d.get('style-file', None)
+            dictionary = Dict(name, able, on, title, lang, icon, audio_icon, delimiter, func, style_file)
             self.all_dict.append(dictionary)
             if on:
                 self.on_dict.append(dictionary)
@@ -249,7 +252,7 @@ class Dicts:
 
 class Dict:
     def __init__(self, name: str, able: bool, on: bool, title: str, lang: list, icon: str, audio_icon: str,
-                 delimiter: str = ';', func=None):
+                 delimiter: str = ';', func=None, style_file: str = None):
         self.name = name
         self.able = able
         self.on = on
@@ -259,13 +262,14 @@ class Dict:
         self.audio_icon = audio_icon
         self.delimiter = delimiter
         self.func = func
+        self.style_file = style_file
 
     @classmethod
-    def message_result(cls, text: str):
+    def message_result(cls, text: str = ''):
         return {
             'type': 2,
-            'text': text,
-            'trans': ''
+            'text': '',
+            'trans': text
         }
 
     def do_trans(self, text, from_lang) -> dict:
