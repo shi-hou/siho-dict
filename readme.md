@@ -1,4 +1,4 @@
-基于PyQt5的Windows桌面划词翻译程序，目前仅支持百度翻译
+基于PyQt5的Windows桌面划词翻译程序，支持百度翻译和Moji辞書
 
 ## 使用
 
@@ -7,7 +7,7 @@
 
 ## TODO:
 
-- 添加Moji辞典
+- 翻译结果美化
 - 接入Anki
 
 ## Bugs

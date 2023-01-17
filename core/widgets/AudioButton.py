@@ -8,7 +8,7 @@ from core import utils
 
 class AudioButton(QWidget):
 
-    def __init__(self, url: str, color: str, text: str = ''):
+    def __init__(self, url: str, icon: str, text: str = ''):
         super().__init__()
 
         player = QMediaPlayer()
@@ -18,7 +18,7 @@ class AudioButton(QWidget):
         label = QLabel(text)
 
         btn = QPushButton()
-        btn.setIcon(QIcon(QPixmap(utils.get_resources_path(f'audio-{color}.svg'))))
+        btn.setIcon(QIcon(QPixmap(utils.get_resources_path(icon))))
         btn.setStyleSheet('border: none;')
 
         @btn.clicked.connect

@@ -9,7 +9,6 @@ class IPage(QScrollArea):
         page_widget = QWidget()
         self.page_layout = QVBoxLayout()
         self.page_layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.page_layout)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWidgetResizable(True)

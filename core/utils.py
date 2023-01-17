@@ -53,7 +53,7 @@ def request_get(url, params=None):
 def request_post(url, data=None, json=None):
     return requests.post(url, data, json, headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
-    }, proxies=get_proxies())
+    }, proxies=get_proxies(), timeout=(5, 5))
 
 
 def get_app_dir_path():
