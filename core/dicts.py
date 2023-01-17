@@ -14,7 +14,6 @@ def baidu_lang_detect(text):
     return utils.request_post(URL_BAIDU_LANG_DETECT, json={'query': text}).json()['lan']
 
 
-@retry(tries=3)
 def baidu_trans(text, _) -> dict:
     # 非中文->中文, 中文(也可能是日文)->英文
     from_lang = baidu_lang_detect(text)
@@ -85,7 +84,6 @@ def moji_login(email: str, password: str):
 # _SessionToken = moji_login(moji_account.get('email'), moji_account.get('password'))
 
 
-@retry(tries=3, delay=1)
 def moji_search(text, _) -> dict:
     search_results = utils.request_post(URL_MOJI_SEARCH_V3, json={
         "_InstallationId": _InstallationId,

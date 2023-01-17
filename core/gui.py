@@ -3,7 +3,7 @@ from time import sleep
 import keyboard
 import mouse
 import pyperclip
-from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
+from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QThread
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout
 from pyqtkeybind import keybinder
@@ -68,9 +68,9 @@ class TransWindow(BaseWindow):
         self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('固定_line.svg'))
         self.result_list_widget = ResultListWidget()
         self.thread_pool = QThreadPool(self)
-        self.thread_pool.setMaxThreadCount(1)
+        self.thread_pool.setMaxThreadCount(4)
         self.window_show_worker = None
-        self.trans_loader = None
+        self.trans_loaders = []
         self.fix_not_hidden = False
         self.init()
 
@@ -132,16 +132,19 @@ class TransWindow(BaseWindow):
         self.show()
         if has_content:
             self.result_list_widget.loading()
-            self.trans_loader = self.TransLoader(self.trans_signal, input_text)
-            self.thread_pool.start(self.trans_loader)
+            self.trans_loaders = []
+            for i in range(len(dicts.on_dict)):
+                trans_loader = self.TransLoader(i, self.trans_signal, input_text)
+                self.trans_loaders.append(trans_loader)
+                self.thread_pool.start(trans_loader)
 
     @pyqtSlot(int, dict)
     def show_trans_result(self, index, result_dict):
         self.result_list_widget.widget_list[index].setResult(result_dict)
 
     def on_hotkey(self):
-        if self.trans_loader:
-            self.thread_pool.clear()
+        for loader in self.trans_loaders:
+            loader.stop()
         self.result_list_widget.clear()
         x, y = mouse.get_position()
         self.window_show_worker = self.WindowShowWorker(self.show_signal, QRect(x, y, self.width(), self.height()))
@@ -194,19 +197,30 @@ class TransWindow(BaseWindow):
 
     class TransLoader(QRunnable):
 
-        def __init__(self, trans_signal, text: str):
+        def __init__(self, index, trans_signal, text: str):
             super().__init__()
+            self.index = index
             self.trans_signal = trans_signal
             self.text = text
+            self.is_running = True
 
         def run(self):
+            retries = 3
             from_lang = utils.check_language(self.text)
-            for index, d in enumerate(dicts.on_dict):
+            for i in range(retries):
+                if not self.is_running:
+                    return
                 try:
-                    trans_result = d.do_trans(self.text, from_lang)
-                except Exception:
-                    trans_result = Dict.message_result('翻译出现异常')
-                self.trans_signal.emit(index, trans_result)
+                    result = dicts.on_dict[self.index].do_trans(self.text, from_lang)
+                    self.trans_signal.emit(self.index, result)
+                    return
+                except Exception as err:
+                    print(err)
+                    pass
+            self.trans_signal.emit(self.index, Dict.message_result('翻译出现异常'))
+
+        def stop(self):
+            self.is_running = False
 
 
 class SettingWindow(BaseWindow):
