@@ -46,22 +46,25 @@ def get_proxies():
     return {'https': url} if url else None
 
 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+}
+
+
 def request_get(url, params=None):
-    return requests.get(url, params)
+    return requests.get(url, params, headers=headers, proxies=get_proxies(), timeout=(5, 5))
 
 
 def request_post(url, data=None, json=None):
-    return requests.post(url, data, json, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36'
-    }, proxies=get_proxies(), timeout=(5, 5))
+    return requests.post(url, data, json, headers=headers, proxies=get_proxies(), timeout=(5, 5))
 
 
 def get_app_dir_path():
     return os.path.dirname(os.path.abspath(sys.argv[0]))
 
 
-def get_resources_path(resource_name=""):
-    return os.path.join(get_app_dir_path(), "assets", resource_name)
+def get_resources_path(*resource_name: str):
+    return os.path.join(get_app_dir_path(), "assets", *resource_name)
 
 
 def get_app_exe_path():
@@ -124,14 +127,6 @@ def set_auto_run(new_value: bool) -> bool:
 
 
 def get_config():
-    # default_config = {
-    #     'hotkey': 'Ctrl+Alt+Z',
-    #     'dict': {
-    #         dict_list[0].get('name'): {
-    #             'on': True
-    #         }
-    #     }
-    # }
     try:
         config_file = os.path.join(get_app_dir_path(), 'config.json')
         with open(config_file, 'r') as f:
