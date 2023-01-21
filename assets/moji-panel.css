@@ -1,0 +1,67 @@
+@font-face {
+    font-family: 'HiraMinProN-W6';
+    src: url('HiraMinProN-W6.ttf');
+}
+
+a {
+    text-decoration: none;
+    display: inline-flex;
+    vertical-align: middle;
+}
+
+body {
+    min-height: 100%;
+    font-size: 14px;
+    font-family: Meiryo, MS Gothic, Tahoma, Arial, PingFang SC Regular, Microsoft Yahei;
+    text-align: left;
+    color: black;
+    display: block;
+}
+
+.spell {
+    color: #3d454c;
+    font-size: 24px;
+    font-family: HiraMinProN-W6;
+}
+
+.pron {
+    font-size: 13px;
+    color: #3d454c;
+    line-height: 1.4;
+}
+
+.part-of-speech {
+    font-size: 12px;
+    line-height: 3;
+}
+
+.word-trans {
+    background: #acacac1a;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 16px;
+}
+
+.example-title {
+    padding-left: 16px;
+    line-height: 20px;
+}
+
+.example-trans {
+    padding-left: 16px;
+    color: #8b8787;
+    line-height: 18px;
+    margin-bottom: 24px;
+}
+
+.sound .soundLink img, .link img {
+    height: 18px;
+    width: 18px;
+}
+
+ruby rt {
+    font-weight: 400;
+    font-size: 10px;
+    text-align: center;
+    font-family: Meiryo, MS Gothic, Tahoma, Arial, PingFangSC-Regular, Microsoft Yahei;
+}

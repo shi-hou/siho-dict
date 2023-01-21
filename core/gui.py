@@ -10,7 +10,7 @@ from pyqtkeybind import keybinder
 
 from core import utils
 from core.dicts import Dict, dicts
-from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, ResultListWidget
+from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, ResultViewListWidget
 
 
 class MainWindow(QMainWindow):
@@ -66,7 +66,7 @@ class TransWindow(BaseWindow):
         self.input_edit = QLineEdit()
         super().__init__(title_bar_slot=self.input_edit)
         self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('固定_line.svg'))
-        self.result_list_widget = ResultListWidget()
+        self.result_list_widget = ResultViewListWidget()
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(4)
         self.window_show_worker = None
@@ -120,7 +120,7 @@ class TransWindow(BaseWindow):
         self.setFixNotHidden(False)
         self.input_edit.clear()
         self.content_widget.hide()
-        BaseWindow.hide(self)
+        super().hide()
         self.stopLoad()
 
     @pyqtSlot(str, int, int)

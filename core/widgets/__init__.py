@@ -5,4 +5,4 @@ from .IGroup import IGroup
 from .ILineEdit import ILineEdit
 from .AudioButton import AudioButton
 from .BaseWindow import BaseWindow
-from .ResultListWidget import ResultListWidget
+from .ResultViewListWidget import ResultViewListWidget

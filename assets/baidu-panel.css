@@ -1,0 +1,17 @@
+.text, .voice, .pos, .trans {
+    font-family: Arial, Microsoft Yahei;
+    font-size: 14px;
+}
+
+.text {
+    font-weight: bold;
+}
+
+.pos {
+    color: #888683;
+}
+
+.soundLink img {
+    height: 18px;
+    width: 18px;
+}

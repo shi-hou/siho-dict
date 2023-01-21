@@ -12,14 +12,7 @@
 ## Bugs
 
 - 启动后第一次翻译会有卡顿现象
-- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题，如在IDEA可以先自行`Ctrl+C`复制需要翻译的文本，再按快捷键即可翻译。
-- 不支持多屏幕
-
-## 参考
-
-- [【Python】读取windows代理信息](https://www.cnblogs.com/wuruiyang/p/15928700.html)
-- [python打包exe开机自动启动的实例(windows)](http://www.qb5200.com/article/373470.html)
-- [如何在 pyqt 中自定义无边框窗口](https://www.cnblogs.com/zhiyiYo/p/14659981.html)
+- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题
 
 ---
 

@@ -1,7 +1,0 @@
-.pron-label, .trans-result-label, .text-label {
-    font-family: "Arial";
-    font-size: 14px;
-}
-.text-label {
-    font-weight: 500;
-}

@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 
@@ -27,6 +28,7 @@ def except_hook(exc_type, exc_value, exc_tb):
 
 
 sys.excepthook = except_hook
+os.environ['QTWEBENGINE_REMOTE_DEBUGGING'] = '9966'  # 打开QWebEngineView调试控制台 http://localhost:9966
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)

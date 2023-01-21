@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        body {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <script src="qwebchannel.js"></script>
+    <script>
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+                window.Bridge = channel.objects.Bridge;
+
+                const panelDiv = document.getElementById('panel')
+                const resultDiv = document.getElementById('result')
+                const messageDiv = document.getElementById('message')
+
+                Bridge.result_signal.connect(function (result_html, script_list) {
+                    messageDiv.innerHTML = ''
+                    resultDiv.innerHTML = result_html
+                    for (let i = 0; i < script_list.length; i++) {
+                        (Function(script_list[i]))()
+                    }
+                });
+
+                Bridge.message_signal.connect(function (message) {
+                    resultDiv.innerHTML = ''
+                    messageDiv.innerHTML = message
+                });
+
+                new ResizeObserver((entries) =>
+                    Bridge.setHeight(entries[0].target.scrollHeight)
+                ).observe(panelDiv);
+            }
+        );
+
+        function audioPlay(title) {
+            Bridge.audioBtnOnclick(title);
+        }
+    </script>
+</head>
+<body>
+<div id="panel">
+    <div id="message"></div>
+    <div id="result"></div>
+</div>
+</body>
+</html>

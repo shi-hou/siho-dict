@@ -75,21 +75,21 @@ IPage {
     background-color: #f5f5f7;
 }
 
-IPage > QScrollBar:vertical {
+IPage QScrollBar:vertical {
     border: none;
     background: #f5f5f7;
     width: 10px;
     margin: 0px 0 0px 0;
 }
 
-IPage > QScrollBar::handle:vertical {
+IPage QScrollBar::handle:vertical {
     background-color: #b1b1b1;
     min-height: 20px;
     border-radius: 5px;
     border: none;
 }
 
-IPage > QScrollBar::add-line:vertical {
+IPage QScrollBar::add-line:vertical {
     border: 0px solid #f5f5f7;
     background: #f5f5f7;
     height: 0px;
@@ -97,7 +97,7 @@ IPage > QScrollBar::add-line:vertical {
     subcontrol-origin: margin;
 }
 
-IPage > QScrollBar::sub-line:vertical {
+IPage QScrollBar::sub-line:vertical {
     border: 0px solid grey;
     background: #32CC99;
     height: 0px;
@@ -105,7 +105,7 @@ IPage > QScrollBar::sub-line:vertical {
     subcontrol-origin: margin;
 }
 
-IPage > QScrollBar::add-page:vertical, IPage > QScrollBar::sub-page:vertical {
+IPage QScrollBar::add-page:vertical, IPage QScrollBar::sub-page:vertical {
     background-color: #f2f1f6;
     width: 0px;
     height: 0px;
@@ -168,11 +168,11 @@ IMenu::separator {
     border-bottom-right-radius: 8px;
 }
 
-ResultWidget .title-label {
+ResultViewWidget .title-label {
     font-family: "PingFang SC Medium";
 }
 
-ResultWidget {
+ResultViewWidget {
     border-radius: 10px;
     background-color: white;
 }

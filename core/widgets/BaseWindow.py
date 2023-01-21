@@ -14,6 +14,7 @@ class BaseWindow(QMainWindow):
 
     def __init__(self, title="", title_bar_slot=None):
         super().__init__()
+        self.page = None
         self.content_widget = QWidget()
         self.content_layout = QVBoxLayout()
         self.close_btn = QPushButton("✕")
@@ -67,6 +68,7 @@ class BaseWindow(QMainWindow):
         event.ignore()
 
     def setPage(self, page: IPage):
+        self.page = page
         self.content_layout.addWidget(page, Qt.AlignTop)
 
     def addTitleBarButton(self, text: str = '', icon: str = None) -> QPushButton:

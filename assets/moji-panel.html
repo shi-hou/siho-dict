@@ -1,0 +1,25 @@
+<div class="spell">{{spell}}</div>
+<div class="pron">{{pron}}</div>
+<div>
+    <a class="link" href="{{link}}">
+        <img src="Note.svg" alt="链接"/>
+    </a>
+    <span class="sound">{{voice}}</span>
+</div>
+<div class="part-of-speech">{{part_of_speech}}</div>
+<div class="">{{examples}}</div>
+<script>
+    changeDisplay = transId => {
+        const trans = document.getElementById('trans-' + transId);
+        if (trans.style.display === 'none')
+            trans.style.display = 'block'
+        else
+            trans.style.display = 'none'
+    }
+</script>
+<script>
+    const rtList = document.getElementsByTagName('rt');
+    for (let i = 0; i < rtList.length; i++) {
+        rtList[i].innerText = rtList[i].getAttribute('hiragana')
+    }
+</script>
