@@ -65,7 +65,7 @@ class TransWindow(BaseWindow):
     def __init__(self):
         self.input_edit = QLineEdit()
         super().__init__(title_bar_slot=self.input_edit)
-        self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('固定_line.svg'))
+        self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('icon', '固定_line.svg'))
         self.result_list_widget = ResultViewListWidget()
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(4)
@@ -99,7 +99,7 @@ class TransWindow(BaseWindow):
                 self.show_window = self.WindowShowWorker(self.show_signal, self.frameGeometry(), input_txt)
                 self.thread_pool.start(self.show_window)
 
-        fold_btn = self.addTitleBarButton(icon=utils.get_resources_path('折叠面板.svg'))
+        fold_btn = self.addTitleBarButton(icon=utils.get_resources_path('icon', '折叠面板.svg'))
 
         @fold_btn.clicked.connect
         def fold_button_on_click():
@@ -165,7 +165,8 @@ class TransWindow(BaseWindow):
 
     def setFixNotHidden(self, value: bool):
         self.fix_not_hidden = value
-        self.fix_btn.setIcon(QIcon(QPixmap(utils.get_resources_path('固定_fill.svg' if value else '固定_line.svg'))))
+        self.fix_btn.setIcon(
+            QIcon(QPixmap(utils.get_resources_path('icon', '固定_fill.svg' if value else '固定_line.svg'))))
 
     def stopLoad(self):
         for loader in self.trans_loaders:
@@ -264,7 +265,7 @@ class SettingWindow(BaseWindow):
             switch.setEnabled(d.able)
             self.dict_switch_list.append(switch)
 
-            dict_setting_group.addRow(d.title, switch, utils.get_resources_path(d.icon))
+            dict_setting_group.addRow(d.title, switch, utils.get_resources_path('icon', d.icon))
 
         setting_page.addWidget(dict_setting_group)
 
@@ -274,12 +275,12 @@ class SettingWindow(BaseWindow):
 class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
-        self.setIcon(QIcon(QPixmap(utils.get_resources_path('翻译.svg'))))
+        self.setIcon(QIcon(QPixmap(utils.get_resources_path('icon', '翻译.svg'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
         self.menu_open_trans_act = self.menu.addAction('显示翻译窗口')
-        self.menu_open_setting_act = self.menu.addAction('设置', utils.get_resources_path('设置.svg'))
-        self.menu_quit_act = self.menu.addAction('退出', utils.get_resources_path('退出.svg'))
+        self.menu_open_setting_act = self.menu.addAction('设置', utils.get_resources_path('icon', '设置.svg'))
+        self.menu_quit_act = self.menu.addAction('退出', utils.get_resources_path('icon', '退出.svg'))
         self.setContextMenu(self.menu)
 
         @self.menu_quit_act.triggered.connect

@@ -61,7 +61,7 @@ class ResultViewWidget(QWidget):
         icon_label = QLabel()
         icon_label.setFixedHeight(15)
         icon_label.setFixedWidth(15)
-        icon = utils.get_resources_path(self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
+        icon = utils.get_resources_path('icon', self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
         icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 3px;')
         title_layout.addWidget(icon_label)
 
@@ -122,7 +122,7 @@ class ResultView(QWebEngineView):
                             new_element = document.createElement("link");
                             new_element.setAttribute("rel", "stylesheet");
                             new_element.setAttribute("type", "text/css");
-                            new_element.setAttribute("href", "{css_file}");
+                            new_element.setAttribute("href", "css/{css_file}");
                             document.head.appendChild(new_element);
                         ''')
 
@@ -157,7 +157,7 @@ class ResultView(QWebEngineView):
                 return f'''
                 <a class="soundLink" href="#" onclick="audioPlay('{data_title}')" 
                    style="text-decoration: none; display: inline-flex; vertical-align: middle;">
-                    <img src="{self.sound_icon}" alt="发音" />
+                    <img src="icon/{self.sound_icon}" alt="发音" />
                 </a>
                 '''
             return data
