@@ -39,7 +39,7 @@ body {
     background: #acacac1a;
     border-radius: 8px;
     padding: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
 }
 
 .example-title {
@@ -51,7 +51,7 @@ body {
     padding-left: 16px;
     color: #8b8787;
     line-height: 18px;
-    margin-bottom: 24px;
+    margin-bottom: 10px;
 }
 
 .sound .soundLink img, .link img {

@@ -78,8 +78,8 @@ class TransWindow(BaseWindow):
         self.trans_signal.connect(self.show_trans_result)
         self.show_signal.connect(self.show_window)
 
-        self.setFixedWidth(309)
-        self.setFixedHeight(500)
+        self.setFixedWidth(370)
+        self.setFixedHeight(560)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.Tool)
         self.content_widget.hide()
