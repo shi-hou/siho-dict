@@ -1,12 +1,12 @@
 import win32con
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QScrollArea, QMainWindow
+from PyQt5.QtGui import QIcon, QPixmap, QResizeEvent
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QMainWindow
 from win32api import SendMessage
 from win32gui import ReleaseCapture
 
 from core import utils
-from core.widgets.IPage import IPage
+from core.widgets import IToast, IPage
 
 
 class BaseWindow(QMainWindow):
@@ -22,6 +22,7 @@ class BaseWindow(QMainWindow):
         self.title_bar = QWidget()
         self.Point = (0, 0)
         self.Move = False
+        self.toast = IToast(self)
         self.init_window(title, title_bar_slot)
 
     def init_window(self, title="", title_bar_slot=None):
@@ -81,3 +82,10 @@ class BaseWindow(QMainWindow):
         index = self.title_bar_layout.count() - 1
         self.title_bar_layout.insertWidget(index, btn)
         return btn
+
+    def showToast(self, text: str, sec: int = 2):
+        self.toast.setText(text)
+        self.toast.rise(sec)
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        self.toast.setFixedWidth(max(event.size().width() - 200 * 2, self.toast.width()))
