@@ -140,6 +140,9 @@ class TransWindow(BaseWindow):
                 trans_loader = self.TransLoader(i, self.trans_signal, input_text)
                 self.trans_loaders.append(trans_loader)
                 self.thread_pool.start(trans_loader)
+        else:
+            self.activateWindow()
+            self.input_edit.setFocus()
 
     @pyqtSlot(int, dict)
     def show_trans_result(self, index, result_dict):
