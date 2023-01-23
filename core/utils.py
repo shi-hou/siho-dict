@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 import winreg
 
@@ -40,10 +41,14 @@ def get_proxy_url() -> str:
 
 
 def get_proxies():
-    if not is_open_proxy():
-        return None
-    url = get_proxy_url()
-    return {'https': url} if url else None
+    # if not is_open_proxy():
+    #     return None
+    # url = get_proxy_url()
+    # return {'https': url} if url else None
+    return {
+        "http": None,
+        "https": None,
+    }
 
 
 headers = {
@@ -148,3 +153,19 @@ def update_config(config: dict):
 
 def check_language(string: str) -> str:
     return langid.classify(string)[0]
+
+
+def store_tmp_file(filename: str, url: str) -> str:
+    tmp_dir_path = os.path.join(get_app_dir_path(), 'tmp')
+    os.makedirs(tmp_dir_path, exist_ok=True)
+    file_path = os.path.join(tmp_dir_path, filename)
+    if not os.path.exists(file_path):
+        content = request_get(url).content
+        with open(file_path, 'wb') as f:
+            f.write(content)
+            f.close()
+    return file_path
+
+
+def clear_tmp_file():
+    shutil.rmtree(os.path.join(get_app_dir_path(), 'tmp'), ignore_errors=True)

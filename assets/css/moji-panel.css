@@ -24,7 +24,7 @@ body {
     font-family: HiraMinProN-W6;
 }
 
-.pron {
+.pron-and-accent {
     font-size: 13px;
     color: #3d454c;
     line-height: 1.4;
@@ -54,7 +54,7 @@ body {
     margin-bottom: 10px;
 }
 
-.sound .soundLink img, .link img {
+.sound .soundLink img, .link img, .anki-btn img {
     height: 18px;
     width: 18px;
 }

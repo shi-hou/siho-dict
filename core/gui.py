@@ -3,6 +3,7 @@ from time import sleep
 import keyboard
 import mouse
 import pyperclip
+import requests
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout
@@ -10,7 +11,7 @@ from pyqtkeybind import keybinder
 
 from core import utils
 from core.dicts import Dict, dicts
-from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, ResultViewListWidget
+from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, ResultViewListWidget, IToast
 
 
 class MainWindow(QMainWindow):
@@ -241,6 +242,8 @@ class SettingWindow(BaseWindow):
     def init(self):
         self.setFixedSize(800, 500)
 
+        config = utils.get_config()
+
         setting_page = IPage()
         self.setPage(setting_page)
 
@@ -253,7 +256,7 @@ class SettingWindow(BaseWindow):
 
         basic_setting_group.addRow('开机自启', auto_run_switch)
 
-        self.hotkey_edit.setText(utils.get_config().get('hotkey', 'Ctrl+Alt+Z'))
+        self.hotkey_edit.setText(config.get('hotkey', 'Ctrl+Alt+Z'))
         basic_setting_group.addRow('热键', self.hotkey_edit)
 
         setting_page.addWidget(basic_setting_group)
@@ -265,9 +268,65 @@ class SettingWindow(BaseWindow):
             switch.setEnabled(d.able)
             self.dict_switch_list.append(switch)
 
-            dict_setting_group.addRow(d.title, switch, utils.get_resources_path('icon', d.icon))
+            dict_setting_group.addRow(d.title, switch, d.icon)
 
         setting_page.addWidget(dict_setting_group)
+
+        anki_setting_group = IGroup('Anki Connect', '点击“检查Anki Connect”将创建已开启的词典的Anki牌组和模板, 若同名的牌组和模板已存在则忽略')
+
+        anki_on_switch = ISwitch(on=config.get('anki-on', False))
+        anki_on_switch.toggled.connect(lambda: utils.update_config({'anki-on': anki_on_switch.isToggled()}))
+        anki_setting_group.addRow('开启', anki_on_switch, 'anki.png')
+
+        anki_address_input = ILineEdit(config.get('anki-address', '127.0.0.1'))
+        anki_address_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-address': anki_address_input.text()}))
+        anki_setting_group.addRow('地址', anki_address_input)
+
+        anki_port_input = ILineEdit(config.get('anki-port', '8765'))
+        anki_port_input.editingFinished.connect(lambda: utils.update_config({'anki-port': anki_port_input.text()}))
+        anki_setting_group.addRow('端口', anki_port_input)
+
+        anki_key_input = ILineEdit(config.get('anki-key', ''))
+        anki_key_input.editingFinished.connect(lambda: utils.update_config({'anki-key': anki_key_input.text()}))
+        anki_setting_group.addRow('Key', anki_key_input)
+
+        anki_baidu_deck_input = ILineEdit(config.get('anki-baidu-deck', 'Baidu'))
+        anki_baidu_deck_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-baidu-deck': anki_baidu_deck_input.text()}))
+        anki_setting_group.addRow('百度牌组', anki_baidu_deck_input)
+
+        anki_baidu_model_input = ILineEdit(config.get('anki-baidu-model', 'Baidu'))
+        anki_baidu_model_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-baidu-model': anki_baidu_model_input.text()}))
+        anki_setting_group.addRow('百度笔记模板', anki_baidu_model_input)
+
+        anki_moji_deck_input = ILineEdit(config.get('anki-moji-deck', 'Moji'))
+        anki_moji_deck_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-moji-deck': anki_moji_deck_input.text()}))
+        anki_setting_group.addRow('Moji牌组', anki_moji_deck_input)
+
+        anki_moji_model_input = ILineEdit(config.get('anki-moji-model', 'Moji'))
+        anki_moji_model_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-moji-model': anki_moji_model_input.text()}))
+        anki_setting_group.addRow('Moji笔记模板', anki_moji_model_input)
+
+        # anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
+        # anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))
+        # anki_setting_group.addRow('同步', anki_sync_switch)
+
+        def create_anki_deck_and_model():
+            try:
+                for on_dict in dicts.on_dict:
+                    if on_dict.is_anki_able:
+                        on_dict.anki_create_deck_and_model_func()
+                IToast.showToast(self, '连接成功，已创建牌组和模板')
+            except requests.exceptions.ConnectionError:
+                IToast.showToast(self, '无法连接AnkiConnect, 请确认Anki已启动并重试')
+
+        anki_setting_group.addButton('检查Anki Connect', create_anki_deck_and_model)
+
+        setting_page.addWidget(anki_setting_group)
 
         setting_page.addSpacing(100)
 

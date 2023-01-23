@@ -1,6 +1,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout
 
+from core import utils
+
 
 class IGroup(QWidget):
     def __init__(self, title=None, explain=None):
@@ -47,6 +49,12 @@ class IGroup(QWidget):
             self.rows[row_index - 1].widget_with_border_bottom.setProperty('class', 'i-row-with-bottom-border')
         self.form_layout.addWidget(row)
         self.rows.append(row)
+        return row
+
+    def addButton(self, text: str, onclick):
+        row = self.addRow(text)
+        row.setStyleSheet('color: #007AFF;')
+        row.mousePressEvent = lambda event: onclick()
 
     class IRow(QWidget):
         def __init__(self, labelText: str = '', widget: QWidget = None, icon: str = None):
@@ -62,7 +70,7 @@ class IGroup(QWidget):
                 icon_label = QLabel()
                 icon_label.setFixedHeight(30)
                 icon_label.setFixedWidth(30)
-                icon = icon.replace('\\', '/')  # url()用“\”会不生效
+                icon = utils.get_resources_path('icon', icon).replace('\\', '/')  # url()用“\”会不生效
                 icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 10px;')
                 self.row_layout.addWidget(icon_label)
 

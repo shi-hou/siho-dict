@@ -12,7 +12,7 @@
     color: #888683;
 }
 
-.soundLink img {
+.soundLink img, .anki-btn img {
     height: 18px;
     width: 18px;
 }
