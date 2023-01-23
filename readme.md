@@ -21,5 +21,5 @@
 打包成exe命令:
 
 ```
-pyinstaller -i "assets\翻译.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
+pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
 ```
