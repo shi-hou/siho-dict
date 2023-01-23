@@ -1,0 +1,9 @@
+/build
+/dist
+/.idea
+/__pycache__
+/venv
+/tmp
+*.spec
+test*.py
+config.json
