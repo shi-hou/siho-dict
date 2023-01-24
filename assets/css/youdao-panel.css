@@ -1,0 +1,51 @@
+@font-face {
+    font-family: 'PingFang SC';
+    src: url('../fonts/PingFang SC Regular.ttf');
+}
+
+body {
+    font-family: 'Microsoft Yahei', "PingFang SC";
+    font-size: 14px;
+}
+
+.title {
+    font-size: 20px;
+    color: #101214;
+    font-weight: bold;
+    padding-left: 0;
+    font-family: "Dutch801 Rm BT", "AvertaStd-Semibold", "PingFang SC";
+    line-height: 2;
+}
+
+.phone-and-speech {
+    color: #666;
+    padding: 8px 10px;
+    margin-right: 13px;
+}
+
+.speech img {
+    height: 18px;
+    width: 18px;
+}
+
+.pos_and_tran {
+    padding: 8px 10px;
+}
+
+.pos {
+    font-family: 'Georgia';
+    font-style: italic;
+    font-weight: normal;
+    color: #939599;
+}
+
+.tran {
+    color: #101214;
+}
+
+.exam-type {
+    font-size: 13px;
+    line-height: 17px;
+    color: #939599;
+    margin: 10px 0;
+}

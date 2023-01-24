@@ -1,3 +1,4 @@
+import traceback
 from time import sleep
 
 import keyboard
@@ -226,9 +227,8 @@ class TransWindow(BaseWindow):
                     result = dicts.on_dict[self.index].do_trans(self.text, from_lang)
                     self.trans_signal.emit(self.index, result)
                     return
-                except Exception as err:
-                    print(err)
-                    pass
+                except Exception:
+                    traceback.print_exc()
             self.trans_signal.emit(self.index, Dict.message_result('翻译出现异常'))
 
         def stop(self):

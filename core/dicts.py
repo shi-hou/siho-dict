@@ -1,20 +1,104 @@
+import hashlib
 import json
 from retry import retry
 
 from core import utils
 from core.anki import Anki
 
+'''====================================================有道词典===================================================='''
+
+
+# <editor-fold desc="有道词典">
+
+def youdao_search(q: str, _):
+    S = "web"
+    k = "webdict"
+    time = len(q + k) % 10
+    x = "Mk6hqtUp33DGGtoS63tTJbMUYjRrG1Lu"
+    r = q + k
+
+    def y(t):
+        m = hashlib.md5()
+        m.update(t.encode('utf-8'))
+        return m.hexdigest()
+
+    resp = utils.request_post(url='https://dict.youdao.com/jsonapi_s?doctype=json&jsonversion=4',
+                              data={
+                                  'q': q,
+                                  'le': 'en',
+                                  't': time,
+                                  'client': S,
+                                  'sign': y(S + q + str(time) + x + y(r)),
+                                  'keyfrom': k
+                              })
+    resp_json = resp.json()
+    result_body = {}
+    fanyi = resp_json.get('fanyi')
+    if fanyi:  # 输入为句子, 机器翻译
+        result_body['trans_html'] = fanyi.get('tran')
+        return result_body
+
+    ec = resp_json.get('ec')
+    if ec:  # 输入英文单词
+        result_body['exam_type'] = " | ".join(ec.get('exam_type', []))
+        word = ec.get('word')
+        if not word:
+            return {}
+        result_body['return-phrase'] = word.get('return-phrase')
+        if word.get('ukphone'):
+            result_body['ukphone'] = f"英/{word.get('ukphone', '')}/"
+        if word.get('usphone'):
+            result_body['usphone'] = f"美/{word.get('usphone', '')}/"
+        speech_titles = ['speech', 'usspeech', 'ukspeech']
+        for speech_title in speech_titles:
+            speech = word.get(speech_title)
+            if speech:
+                result_body[speech_title] = {
+                    'type': 'audio',
+                    'filename': f'youdao_{speech}.mp3',
+                    'url': f'https://dict.youdao.com/dictvoice?audio={speech}'
+                }
+        trs = word.get('trs')
+        trans_html = ''
+        for tr in trs:
+            trans_html += f'''
+                <div class="pos_and_tran">
+                    <div class="pos">{tr.get('pos', '')}</div>
+                    <div class="tran">{tr.get('tran', '')}</div>
+                </div>
+                '''
+        result_body['trans_html'] = trans_html
+        return result_body
+
+    ce = resp_json.get('ce')
+    if ce:  # 输入中文词语
+        word = ce.get('word')
+        result_body['return-phrase'] = word.get('return-phrase', '')
+        trs = word.get('trs')
+        trans_html = ''
+        for tr in trs:
+            trans_html += f'''
+            <div class="text_and_tran">
+                <div class="text">{tr.get('#text', '')}</div>
+                <div class="tran">{tr.get('#tran', '')}</div>
+            </div>
+            '''
+        result_body['trans_html'] = trans_html
+        return result_body
+    # 查无结果
+    return {}
+
+
+# </editor-fold>
+
+
 '''====================================================百度翻译===================================================='''
+
 
 # <editor-fold desc="百度翻译">
 
-URL_BAIDU_LANG_DETECT = 'https://fanyi.baidu.com/langdetect'
-URL_BAIDU_TRANS_V1 = 'https://fanyi.baidu.com/transapi'
-URL_BAIDU_TTS = 'https://fanyi.baidu.com/gettts'
-
-
 def baidu_lang_detect(text):
-    return utils.request_post(URL_BAIDU_LANG_DETECT, json={'query': text}).json()['lan']
+    return utils.request_post('https://fanyi.baidu.com/langdetect', json={'query': text}).json()['lan']
 
 
 # TODO 百度获取发音十有八九为空, b''
@@ -22,7 +106,7 @@ def baidu_trans(text, _) -> dict:
     from_lang = baidu_lang_detect(text)
     # 非中文->中文, 中文(也可能是日文)->英文
     to_lang = 'zh' if from_lang != 'zh' else 'en'
-    resp = utils.request_post(URL_BAIDU_TRANS_V1, json={
+    resp = utils.request_post('https://fanyi.baidu.com/transapi', json={
         'from': from_lang,
         'to': to_lang,
         'query': text,
@@ -152,10 +236,6 @@ def baidu_create_deck_and_model_if_not_exists() -> (str, str):
 
 # <editor-fold desc="Moji辞書">
 
-URL_MOJI_LOGIN = 'https://api.mojidict.com/parse/login'
-URL_MOJI_SEARCH_V3 = 'https://api.mojidict.com/parse/functions/search_v3'
-URL_MOJI_FETCH_WORDS = 'https://api.mojidict.com/parse/functions/nlt-fetchManyLatestWords'
-URL_MOJI_FETCH_TTS = 'https://api.mojidict.com/parse/functions/tts-fetch'
 
 _ClientVersion = 'js2.12.0'
 _ApplicationId = 'E62VyFVLMiW7kvbtVq3p'
@@ -166,7 +246,7 @@ g_ver = 'v4.4.1.20221229'
 
 @retry(tries=3)
 def moji_login(email: str, password: str):
-    return utils.request_post(URL_MOJI_LOGIN, json={
+    return utils.request_post('https://api.mojidict.com/parse/login', json={
         "username": email,
         "password": password,
         "_ClientVersion": _ClientVersion,
@@ -175,12 +255,8 @@ def moji_login(email: str, password: str):
     }).json().get('sessionToken')
 
 
-# moji_account = utils.get_config().get('moji-account')
-# _SessionToken = moji_login(moji_account.get('email'), moji_account.get('password'))
-
-
 def moji_search(text, _) -> dict:
-    search_results = utils.request_post(URL_MOJI_SEARCH_V3, json={
+    search_results = utils.request_post('https://api.mojidict.com/parse/functions/search_v3', json={
         "_InstallationId": _InstallationId,
         "_ClientVersion": _ClientVersion,
         "_ApplicationId": _ApplicationId,
@@ -198,7 +274,7 @@ def moji_search(text, _) -> dict:
 
 @retry(tries=3)
 def moji_fetch_word(word_id: str, title: str) -> dict:
-    result = utils.request_post(URL_MOJI_FETCH_WORDS, json={
+    result = utils.request_post('https://api.mojidict.com/parse/functions/nlt-fetchManyLatestWords', json={
         "_InstallationId": _InstallationId,
         "_ClientVersion": _ClientVersion,
         "_ApplicationId": _ApplicationId,
@@ -260,7 +336,7 @@ def moji_fetch_word(word_id: str, title: str) -> dict:
 
 @retry(tries=3)
 def moji_tts_url(tarId: str, tarType: int):
-    return utils.request_post(URL_MOJI_FETCH_TTS, json={
+    return utils.request_post('https://api.mojidict.com/parse/functions/tts-fetch', json={
         "_InstallationId": _InstallationId,
         "_ClientVersion": _ClientVersion,
         "_ApplicationId": _ApplicationId,
@@ -503,6 +579,17 @@ ruby rt {
 '''====================================================词典列表===================================================='''
 
 dict_list = [
+    {
+        'name': 'youdao',
+        'able': True,
+        'title': '有道词典',
+        'lang': ['en', 'zh'],
+        'icon': 'youdao-logo.png',
+        'audio-icon': 'youdao-voice.png',
+        'template': 'youdao-panel.html',
+        'func': youdao_search,
+        'style-file': 'youdao-panel.css',
+    },
     {
         'name': 'baidu-v1',
         'able': True,
