@@ -102,20 +102,22 @@ def baidu_create_deck_and_model_if_not_exists() -> (str, str):
     if not Anki.is_model_existing(model_name):
         fields = ['text', 'pron_uk', 'voice_uk', 'pron_us', 'voice_us', 'trans']
         css = '''
-            .text, .voice, .pos, .trans {
+            .voice, .pos, .trans {
                 font-family: Arial, Microsoft Yahei;
-                font-size: 14px;
+                font-size: 16px;
             }
-
+            
             .text {
                 font-weight: bold;
+                font-family: Arial, Microsoft Yahei;
+                font-size: 20px;
             }
-
+            
             .pos {
                 padding-top: 10px;
                 color: #888683;
             }
-            '''
+        '''
         back_template = '''
                 <div class="text">{{text}}</div>
                 <div class="voice">{{pron_uk}}{{voice_uk}}</div>
