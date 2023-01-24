@@ -53,8 +53,9 @@ class IGroup(QWidget):
 
     def addButton(self, text: str, onclick):
         row = self.addRow(text)
-        row.setStyleSheet('color: #007AFF;')
+        row.setStyleSheet('*:disabled {color: #CCC;} *:enabled {color: #007AFF}')
         row.mousePressEvent = lambda event: onclick()
+        return row
 
     class IRow(QWidget):
         def __init__(self, labelText: str = '', widget: QWidget = None, icon: str = None):
@@ -81,5 +82,6 @@ class IGroup(QWidget):
             text_label.setProperty('class', 'i-row-text-label')
             layout_with_border_bottom.addWidget(text_label)
             layout_with_border_bottom.addStretch(1)
-            layout_with_border_bottom.addWidget(widget, alignment=Qt.AlignVCenter)
+            if widget:
+                layout_with_border_bottom.addWidget(widget, alignment=Qt.AlignVCenter)
             self.row_layout.addWidget(self.widget_with_border_bottom)

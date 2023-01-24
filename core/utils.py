@@ -169,3 +169,19 @@ def store_tmp_file(filename: str, url: str) -> str:
 
 def clear_tmp_file():
     shutil.rmtree(os.path.join(get_app_dir_path(), 'tmp'), ignore_errors=True)
+
+
+def get_tmp_size() -> int:
+    """
+    获取缓存文件大小, 单位byte
+    :return: 缓存文件大小, 单位byte
+    """
+    total_size = 0
+    for dir_path, dir_names, filenames in os.walk('tmp'):
+        for f in filenames:
+            fp = os.path.join(dir_path, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size

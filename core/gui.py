@@ -331,6 +331,29 @@ class SettingWindow(BaseWindow):
 
         setting_page.addWidget(anki_setting_group)
 
+        tmp_file_group = IGroup('缓存设置')
+
+        tmp_file_size_input = ILineEdit()
+        tmp_file_size_input.setEnabled(False)
+
+        def load_tmp_file_size():
+            tmp_file_bytes = utils.get_tmp_size()
+            tmp_file_size_input.setText("{:.2f}KB".format(tmp_file_bytes / 1024))
+            clear_tmp_btn.setEnabled(tmp_file_bytes > 0)
+
+        def clear_tmp_file():
+            utils.clear_tmp_file()
+            tmp_file_size_input.setText("0.00KB")
+            clear_tmp_btn.setEnabled(False)
+            IToast.showToast(self, '清理成功')
+
+        tmp_file_group.addRow('音频缓存', tmp_file_size_input)
+        tmp_file_group.addButton('重新获取缓存大小', load_tmp_file_size)
+        clear_tmp_btn = tmp_file_group.addButton('清理缓存', clear_tmp_file)
+        load_tmp_file_size()
+
+        setting_page.addWidget(tmp_file_group)
+
         setting_page.addSpacing(100)
 
 
