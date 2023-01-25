@@ -171,8 +171,9 @@ class ResultView(QWebEngineView):
                     filename = data.get('filename')
                     url = data.get('url')
                     self.audios[filename] = url
-                    return f'''
-                    <a class="soundLink" href="#" onclick="audioPlay('{filename}')" 
+                    filename_in_js = filename.replace("'", "\\'")
+                    return rf'''
+                    <a class="soundLink" href="#" onclick="audioPlay('{filename_in_js}')" 
                        style="text-decoration: none; display: inline-flex; vertical-align: middle;">
                         <img src="icon/{self.sound_icon}" alt="{data_title}" />
                     </a>
