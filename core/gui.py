@@ -314,6 +314,16 @@ class SettingWindow(BaseWindow):
             lambda: utils.update_config({'anki-moji-model': anki_moji_model_input.text()}))
         anki_setting_group.addRow('Moji笔记模板', anki_moji_model_input)
 
+        anki_youdao_deck_input = ILineEdit(config.get('anki-youdao-deck', 'Youdao'))
+        anki_youdao_deck_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-youdao-deck': anki_youdao_deck_input.text()}))
+        anki_setting_group.addRow('有道牌组', anki_youdao_deck_input)
+
+        anki_youdao_model_input = ILineEdit(config.get('anki-youdao-model', 'Youdao'))
+        anki_youdao_model_input.editingFinished.connect(
+            lambda: utils.update_config({'anki-youdao-model': anki_youdao_model_input.text()}))
+        anki_setting_group.addRow('有道笔记模板', anki_youdao_model_input)
+
         # anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
         # anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))
         # anki_setting_group.addRow('同步', anki_sync_switch)

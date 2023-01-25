@@ -44,18 +44,19 @@ def youdao_search(q: str, _):
         word = ec.get('word')
         if not word:
             return {}
+        result_body['support-anki'] = True
         result_body['return-phrase'] = word.get('return-phrase')
         if word.get('ukphone'):
             result_body['ukphone'] = f"英/{word.get('ukphone', '')}/"
         if word.get('usphone'):
             result_body['usphone'] = f"美/{word.get('usphone', '')}/"
-        speech_titles = ['speech', 'usspeech', 'ukspeech']
+        speech_titles = ['speech', 'ukspeech', 'usspeech']
         for speech_title in speech_titles:
             speech = word.get(speech_title)
             if speech:
                 result_body[speech_title] = {
                     'type': 'audio',
-                    'filename': f'youdao_{speech}.mp3',
+                    'filename': f'youdao_{speech_title}_{result_body["return-phrase"]}.mp3',
                     'url': f'https://dict.youdao.com/dictvoice?audio={speech}'
                 }
         trs = word.get('trs')
@@ -87,6 +88,122 @@ def youdao_search(q: str, _):
         return result_body
     # 查无结果
     return {}
+
+
+def youdao_add_anki_note(data: dict) -> str:
+    if not data.get('support-anki'):
+        return '暂不支持将该单词添加到Anki'
+
+    deck_name, model_name = youdao_create_deck_and_model_if_not_exists()
+
+    fields = data.copy()
+    speech_titles = ['speech', 'ukspeech', 'usspeech']
+    for title in speech_titles:
+        fields[title] = ''
+
+    if not Anki.can_add_note(deck_name, model_name, fields):
+        return '单词已存在, 无需重复添加'
+
+    audio = []
+    for title in speech_titles:
+        speech = data.get(title)
+        if speech:
+            filename = speech.get('filename')
+            path = utils.store_tmp_file(filename, speech.get('url'))
+            audio.append({
+                'path': path,
+                'filename': filename,
+                'fields': [title]
+            })
+
+    Anki.add_note(deck_name, model_name, fields, audio)
+    return '添加成功'
+
+
+def youdao_create_deck_and_model_if_not_exists() -> (str, str):
+    config = utils.get_config()
+
+    deck_name = config.get('anki-youdao-deck', 'Youdao')
+    Anki.create_deck_if_not_exists(deck_name)
+
+    model_name = config.get('anki-youdao-model', 'Youdao')
+    if not Anki.is_model_existing(model_name):
+        fields = ['return-phrase', 'speech', 'ukphone', 'ukspeech', 'usphone', 'usspeech', 'trans_html', 'exam_type']
+        css = '''
+            body {
+            font-family: 'Microsoft Yahei', "PingFang SC";
+            font-size: 14px;
+        }
+        
+        .title {
+            font-size: 20px;
+            color: #101214;
+            font-weight: bold;
+            padding-left: 0;
+            font-family: "Dutch801 Rm BT", "AvertaStd-Semibold", "PingFang SC";
+            line-height: 2;
+        }
+        
+        .phone-and-speech {
+            color: #666;
+            padding: 8px 10px;
+            margin-right: 13px;
+        }
+        
+        .pos_and_tran {
+            padding: 8px 10px;
+        }
+        
+        .pos {
+            font-family: 'Georgia';
+            font-style: italic;
+            font-weight: normal;
+            color: #939599;
+        }
+        
+        .tran {
+            color: #101214;
+        }
+        
+        .exam-type {
+            font-size: 13px;
+            line-height: 17px;
+            color: #939599;
+            padding: 10px 0;
+        }
+        '''
+        font_template = '''
+            <div>
+                <span class="title">{{return-phrase}}</span>
+            </div>
+        '''
+        back_template = '''
+            <div>
+                <span class="title">{{return-phrase}}</span>
+                <span class="speech">{{speech}}</span>
+            </div>
+            <div>
+                <span class="phone-and-speech">
+                    <span class="phone">{{ukphone}}</span>
+                    <span class="speech">{{ukspeech}}</span>
+                </span>
+                <span class="phone-and-speech">
+                    <span class="phone">{{usphone}}</span>
+                    <span class="speech">{{usspeech}}</span>
+                </span>
+            </div>
+            <div class="trans">{{trans_html}}</div>
+            <div class="exam-type">{{exam_type}}</div>
+        '''
+        card_templates = [
+            {
+                "Name": "单词",
+                "Front": font_template,
+                "Back": back_template
+            }
+        ]
+        Anki.create_model(model_name, fields, css, card_templates)
+    return deck_name, model_name
 
 
 # </editor-fold>
@@ -202,30 +319,16 @@ def baidu_create_deck_and_model_if_not_exists() -> (str, str):
                 color: #888683;
             }
         '''
-        back_template = '''
-                <div class="text">{{text}}</div>
-                <div class="voice">{{pron_uk}}{{voice_uk}}</div>
-                <div class="voice">{{pron_us}}{{voice_us}}</div>
-                <div>{{trans}}</div>
-                '''
-        card_templates = [
-            {
+        card_templates = [{
                 "Name": "单词",
                 "Front": '<div class="text">{{text}}</div>',
-                "Back": back_template
-            },
-            {
-                "Name": "发音",
-                "Front": '''<div class="voice">{{pron_uk}}{{voice_uk}}</div>
-                                <div class="voice">{{pron_us}}{{voice_us}}</div>''',
-                "Back": back_template
-            },
-            {
-                "Name": "中文",
-                "Front": "<div>{{trans}}</div>",
-                "Back": back_template
-            }
-        ]
+                "Back": '''
+                    <div class="text">{{text}}</div>
+                    <div class="voice">{{pron_uk}}{{voice_uk}}</div>
+                    <div class="voice">{{pron_us}}{{voice_us}}</div>
+                    <div>{{trans}}</div>
+                '''
+            }]
         Anki.create_model(model_name, fields, css, card_templates)
     return deck_name, model_name
 
@@ -589,6 +692,8 @@ dict_list = [
         'template': 'youdao-panel.html',
         'func': youdao_search,
         'style-file': 'youdao-panel.css',
+        'anki-add-note': youdao_add_anki_note,
+        'anki-create-deck-and-model': youdao_create_deck_and_model_if_not_exists
     },
     {
         'name': 'baidu-v1',
