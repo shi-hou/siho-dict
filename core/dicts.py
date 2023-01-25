@@ -1,5 +1,7 @@
 import hashlib
 import json
+
+import requests
 from retry import retry
 
 from core import utils
@@ -91,9 +93,6 @@ def youdao_search(q: str, _):
 
 
 def youdao_add_anki_note(data: dict) -> str:
-    if not data.get('support-anki'):
-        return '暂不支持将该单词添加到Anki'
-
     deck_name, model_name = youdao_create_deck_and_model_if_not_exists()
 
     fields = data.copy()
@@ -239,6 +238,7 @@ def baidu_trans(text, _) -> dict:
         result = json.loads(resp['result'])
         voice = result.get('voice')
         if voice is not None and from_lang == 'en':
+            result_body['support-anki'] = True
             if voice[0]['en_phonic']:
                 result_body['pron_uk'] = f"英{voice[0]['en_phonic']}"
                 result_body['voice_uk'] = {
@@ -264,9 +264,6 @@ def baidu_trans(text, _) -> dict:
 
 
 def baidu_add_anki_note(data: dict) -> str:
-    if data.get('from_lang') != 'en' or data.get('type') != 1:
-        return '暂不支持将该单词添加到Anki'
-
     deck_name, model_name = baidu_create_deck_and_model_if_not_exists()
 
     fields = data.copy()
@@ -320,15 +317,15 @@ def baidu_create_deck_and_model_if_not_exists() -> (str, str):
             }
         '''
         card_templates = [{
-                "Name": "单词",
-                "Front": '<div class="text">{{text}}</div>',
-                "Back": '''
+            "Name": "单词",
+            "Front": '<div class="text">{{text}}</div>',
+            "Back": '''
                     <div class="text">{{text}}</div>
                     <div class="voice">{{pron_uk}}{{voice_uk}}</div>
                     <div class="voice">{{pron_us}}{{voice_us}}</div>
                     <div>{{trans}}</div>
                 '''
-            }]
+        }]
         Anki.create_model(model_name, fields, css, card_templates)
     return deck_name, model_name
 
@@ -418,6 +415,7 @@ def moji_fetch_word(word_id: str, title: str) -> dict:
             examples_html += f'<div class="example-trans">{e[1]}</div>'
         examples_html += '</div>'
     return {
+        'support-anki': True,
         'title': title,
         'target_id': word_id,
         'target_type': '102',
@@ -796,6 +794,16 @@ class Dict:
 
     def is_anki_able(self):
         return self.anki_add_note_func and self.anki_create_deck_and_model_func
+
+    def add_anki_note(self, data: dict) -> str:
+        if not data.get('support-anki'):
+            return '暂不支持将该单词添加到Anki'
+        try:
+            return self.anki_add_note_func(data)
+        except requests.exceptions.ConnectionError:
+            return '无法连接AnkiConnect, 请确认Anki已启动并重试'
+        except Exception as err:
+            return str(err)
 
 
 # 用于获取所有词典和已开启词典列表

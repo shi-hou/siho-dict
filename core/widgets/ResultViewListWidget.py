@@ -182,12 +182,16 @@ class ResultView(QWebEngineView):
                     raise Exception('未定义的数据类型')
 
             if data_title == 'anki-btn':
-                return f'''
+                if result.get('support-anki') \
+                        and utils.get_config().get('anki-on', False) and self.dictionary.is_anki_able():
+                    return f'''
                             <a class="anki-btn" href="#" onclick="addAnkiNote()" 
                                 style="text-decoration: none; display: inline-flex; vertical-align: middle;">
                                 <img title="添加到Anki" src="icon/anki-logo2.png" alt="添加到Anki" />
                             </a>
-                        ''' if utils.get_config().get('anki-on', False) and self.dictionary.is_anki_able() else ''
+                        '''
+                else:
+                    return ''
             return data
 
         body_html = self.load_data_pattern.sub(loadData, self.template)
@@ -208,25 +212,19 @@ class ResultView(QWebEngineView):
 
     @pyqtSlot()
     def addAnkiNote(self):
-        anki_note_adder = self.AnkiNoteAdder(self.anki_result_signal, self.dictionary.anki_add_note_func,
+        anki_note_adder = self.AnkiNoteAdder(self.anki_result_signal, self.dictionary,
                                              self.current_data)
         self.thread_pool.start(anki_note_adder)
 
     class AnkiNoteAdder(QRunnable):
-        def __init__(self, signal, anki_func, data: dict):
+        def __init__(self, signal, dictionary: Dict, data: dict):
             super().__init__()
             self.signal = signal
-            self.anki_func = anki_func
+            self.dictionary = dictionary
             self.data = data
 
         def run(self) -> None:
-            try:
-                result = self.anki_func(self.data)
-            except requests.exceptions.ConnectionError:
-                result = '无法连接AnkiConnect, 请确认Anki已启动并重试'
-            except Exception as err:
-                result = str(err)
-            self.signal.emit(result)
+            self.signal.emit(self.dictionary.add_anki_note(self.data))
 
 
 class WebEnginePage(QWebEnginePage):
