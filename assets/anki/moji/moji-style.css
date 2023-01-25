@@ -1,0 +1,127 @@
+@font-face {
+    font-family: HiraMinProN-W6;
+    src: url("_HiraMinProN-W6.ttf");
+}
+
+.replay-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.replay-button svg path {
+    fill: #FF5252;
+}
+
+.to-moji {
+    text-decoration: none;
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 3px;
+}
+
+.to-moji svg {
+    width: 20px;
+    height: 20px;
+}
+
+.card {
+    min-height: 100%;
+    font-size: 14px;
+    font-family: "Hiragino Kaku Gothic Pro", Meiryo, MS Gothic, Tahoma, Arial, PingFangSC-Regular, Microsoft Yahei, "黑体";
+    text-align: left;
+    color: black;
+    background: #f8f8f8;
+    display: block;
+}
+
+.card.nightMode {
+    color: #fafafc;
+    background: #0e0e10;
+}
+
+
+.nightMode .spell, .nightMode .pron-and-accent {
+    color: #fafafc;
+}
+
+.spell {
+    color: #3d454c;
+    font-size: 36px;
+    font-weight: 600;
+    font-family: HiraMinProN-W6, HiraMinProN;
+}
+
+.pron-and-accent {
+    font-size: 16px;
+    color: #3d454c;
+    line-height: 1.4;
+}
+
+.path-of-speech {
+    line-height: 3;
+}
+
+#sound {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+#link {
+    position: fixed;
+    bottom: 0;
+    right: 30px;
+}
+
+.front-trans {
+    font-size: 16px;
+}
+
+.front-trans li {
+    padding-bottom: 10px
+}
+
+.word-trans {
+    font-size: 16px;
+    background: #acacac1a;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 16px;
+}
+
+.nightMode .word-trans {
+    background: #acacac1a
+}
+
+.example-title {
+    padding-left: 16px;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.example-trans {
+    padding-left: 16px;
+    color: #8b8787;
+    font-size: 14px;
+    line-height: 18px;
+    margin-bottom: 24px;
+}
+
+.note {
+    font-size: 15px;
+    color: #FF5252;
+    border: 1px solid #FF5252;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+.sound {
+    float: right
+}
+
+ruby rt {
+    font-weight: 400;
+    font-size: 11px;
+    text-align: center;
+    font-family: "Hiragino Kaku Gothic Pro", Meiryo, MS Gothic, Tahoma, Arial, PingFangSC-Regular, Microsoft Yahei, "黑体";
+}

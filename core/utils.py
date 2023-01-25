@@ -76,9 +76,11 @@ def get_app_exe_path():
     return os.path.realpath(os.path.abspath(sys.argv[0]))
 
 
-def read_qss_file(qss_file_name):
-    with open(qss_file_name, 'r', encoding='UTF-8') as file:
-        return file.read()
+def read_file(*file_path: str) -> str:
+    with open(get_resources_path(*file_path), 'r', encoding='UTF-8') as f:
+        result_txt = f.read()
+        f.close()
+    return result_txt
 
 
 def addMouseEvent(parent, callback, mouse_btn=mouse.LEFT, btn_type=mouse.UP):

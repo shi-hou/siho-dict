@@ -5,4 +5,3 @@ from .IGroup import IGroup
 from .ILineEdit import ILineEdit
 from .IToast import IToast
 from .BaseWindow import BaseWindow
-from .ResultViewListWidget import ResultViewListWidget

@@ -32,7 +32,7 @@ sys.excepthook = except_hook
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
 app = QApplication(sys.argv)
 app.setQuitOnLastWindowClosed(False)
-app.setStyleSheet(utils.read_qss_file(utils.get_resources_path('qss', 'global-style.qss')))
+app.setStyleSheet(utils.read_file('qss', 'global-style.qss'))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('fonts', 'PingFang SC Medium.ttf'))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('fonts', 'PingFang SC Regular.ttf'))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('fonts', 'HiraMinProN-W6.ttf'))
