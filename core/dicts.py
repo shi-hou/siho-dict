@@ -686,33 +686,32 @@ dict_list = [
         'name': 'youdao',
         'able': True,
         'title': '有道词典',
-        'lang': ['en', 'zh'],
+        'exclude_lang': ['ja'],  # 不翻译的语言, 'zh':中文, 'en': 英文, 'ja': 日文
         'icon': 'youdao-logo.png',
         'audio-icon': 'youdao-voice.png',
         'template': 'youdao-panel.html',
-        'func': youdao_search,
+        'func': youdao_search,  # 翻译, 参数为(text, from_lang), 即原文和原文语种, 返回为dict类型
         'style-file': 'youdao-panel.css',
-        'anki-add-note': youdao_add_anki_note,
-        'anki-create-deck-and-model': youdao_create_deck_and_model_if_not_exists
+        'anki-add-note': youdao_add_anki_note,  # 将单词添加到Anki, 接收查词结果, 返回添加结果信息字符串
+        'anki-create-deck-and-model': youdao_create_deck_and_model_if_not_exists  # 创建Anki牌组和模板, 返回牌组名和模板名
     },
     {
         'name': 'baidu-v1',
         'able': True,
         'title': '百度翻译',
-        'lang': ['all'],  # 'zh':中文, 'en': 英文, 'ja': 日文, 'all': 任意
         'icon': 'baidu-trans-logo.png',
         'audio-icon': 'audio-blue.svg',
         'template': 'baidu-panel.html',
-        'func': baidu_trans,  # 翻译, 参数为(text, from_lang), 即原文和原文语种, 返回为dict类型
+        'func': baidu_trans,
         'style-file': 'baidu-panel.css',
-        'anki-add-note': baidu_add_anki_note,  # 将单词添加到Anki, 接收查词结果, 返回添加结果信息字符串
-        'anki-create-deck-and-model': baidu_create_deck_and_model_if_not_exists  # 创建Anki牌组和模板, 返回牌组名和模板名
+        'anki-add-note': baidu_add_anki_note,
+        'anki-create-deck-and-model': baidu_create_deck_and_model_if_not_exists
     },
     {
         'name': 'moji-search',
         'able': True,
         'title': 'Moji辞書',
-        'lang': ['zh', 'ja'],
+        'exclude_lang': ['en'],
         'icon': 'moji-dict-logo.png',
         'audio-icon': 'moji-voice.webp',
         'template': 'moji-panel.html',
@@ -743,7 +742,7 @@ class Dicts:
             able = d.get('able', False)
             on = able and self.dict_settings.get(name, {}).get("on", False)
             title = d.get('title')
-            lang = d.get('lang')
+            exclude_lang = d.get('exclude_lang', [])
             icon = d.get('icon')
             audio_icon = d.get('audio-icon')
             template = d.get('template')
@@ -751,7 +750,7 @@ class Dicts:
             style_file = d.get('style-file', None)
             anki_add_note_func = d.get('anki-add-note', None)
             anki_create_deck_and_model_func = d.get('anki-create-deck-and-model', None)
-            dictionary = Dict(name, able, on, title, lang, icon, audio_icon, template, func, style_file,
+            dictionary = Dict(name, able, on, title, exclude_lang, icon, audio_icon, template, func, style_file,
                               anki_add_note_func, anki_create_deck_and_model_func)
             self.all_dict.append(dictionary)
             if on:
@@ -767,14 +766,14 @@ class Dicts:
 
 
 class Dict:
-    def __init__(self, name: str, able: bool, on: bool, title: str, lang: list, icon: str, audio_icon: str,
+    def __init__(self, name: str, able: bool, on: bool, title: str, exclude_lang: list, icon: str, audio_icon: str,
                  template: str, func=None, style_file: str = None, anki_add_note_func=None,
                  anki_create_deck_and_model=None):
         self.name = name
         self.able = able
         self.on = on
         self.title = title
-        self.lang = lang
+        self.exclude_lang = exclude_lang
         self.icon = icon
         self.audio_icon = audio_icon
         self.template = template
@@ -790,7 +789,7 @@ class Dict:
     def do_trans(self, text, from_lang) -> dict:
         if not self.able or self.func is None:
             return self.message_result('该词典暂不可用')
-        if from_lang not in self.lang and 'all' not in self.lang:
+        if from_lang in self.exclude_lang:
             return self.message_result('该词典不支持该语言')
 
         return self.func(text, from_lang)
