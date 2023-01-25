@@ -3,7 +3,7 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/shi-hou/siho-dict?color=%23409EFF)
 
-基于PyQt5的Windows桌面划词翻译/查词工具，支持百度翻译和Moji辞書，支持将单词添加到Anki。
+基于PyQt5的Windows桌面划词翻译/查词工具，支持有道词典、百度翻译和Moji辞書，支持将单词添加到Anki。
 
 ![img.png](img.png)
 
@@ -30,6 +30,16 @@ pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets
 - 启动后第一次翻译会有卡顿现象
 - 在部分软件使用（如IDEA）会因快捷键冲突而产生问题
 
+## TODO
+
+- 添加输入框提示
+- ...
+
 ## Release History
+- v0.2.0
+  - Add: 添加新的词典支持: 有道词典
+  - Add: 添加缓存清理功能
+  - Fix: 修复查询的单词包含“'”则不能播放音频的问题
+  - Fix: 使不支持添加到Anki的单词在查词面板没有Anki按钮
 - v0.1.0
   - 基础功能实现
