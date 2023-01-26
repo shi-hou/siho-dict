@@ -40,8 +40,6 @@
 
                 let recordHeight = 0;
                 new MutationObserver(function (mutations) {
-                    console.log(mutations);
-
                     let height = panelDiv.scrollHeight;
                     if (height === recordHeight) {
                         return;
