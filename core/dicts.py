@@ -548,7 +548,10 @@ class Dict:
         if not data.get('support-anki'):
             return '暂不支持将该单词添加到Anki'
         try:
-            return self.anki_add_note_func(data)
+            result_txt = self.anki_add_note_func(data)
+            if utils.get_config().get('anki-auto-sync', False):
+                Anki.sync()
+            return result_txt
         except requests.exceptions.ConnectionError:
             return '无法连接AnkiConnect, 请确认Anki已启动并重试'
         except Exception as err:

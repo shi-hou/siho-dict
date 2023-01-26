@@ -329,9 +329,9 @@ class SettingWindow(BaseWindow):
             lambda: utils.update_config({'anki-moji-model': anki_moji_model_input.text()}))
         anki_setting_group.addRow('Moji笔记模板', anki_moji_model_input)
 
-        # anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
-        # anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))
-        # anki_setting_group.addRow('同步', anki_sync_switch)
+        anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
+        anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))
+        anki_setting_group.addRow('添加笔记后自动同步', anki_sync_switch)
 
         def create_anki_deck_and_model():
             try:

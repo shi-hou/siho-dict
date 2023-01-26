@@ -70,3 +70,7 @@ class Anki:
     @classmethod
     def is_media_file_existing(cls, filename: str):
         return filename in cls.invoke("getMediaFilesNames", pattern=filename)
+
+    @classmethod
+    def sync(cls):
+        cls.invoke("sync")
