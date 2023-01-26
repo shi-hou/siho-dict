@@ -32,10 +32,15 @@ pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets
 
 ## TODO
 
-- 添加输入框提示
+- 添加输入框Suggest
 - ...
 
 ## Release History
+- v0.2.1
+  - Add: 添加Anki自动同步
+  - Add: 添加查无结果时提示
+  - Fix: 修复有时候不显示卡片内容的问题
+  - Fix: 调整有道词典样式
 - v0.2.0
   - Add: 添加新的词典支持: 有道词典
   - Add: 添加缓存清理功能
