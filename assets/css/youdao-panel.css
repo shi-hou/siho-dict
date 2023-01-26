@@ -19,8 +19,10 @@ body {
 
 .phone-and-speech {
     color: #666;
-    padding: 8px 10px;
-    margin-right: 13px;
+}
+
+.speech img {
+    padding-right: 10px;
 }
 
 .speech img, .anki-btn img {
