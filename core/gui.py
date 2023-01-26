@@ -456,7 +456,7 @@ class ResultViewWidget(QWidget):
 
     def setResult(self, result_dict: dict):
         if not result_dict:
-            self.clear()
+            self.trans_result_view.setMessage('查无内容')
         elif result_dict.get('message', ''):
             self.trans_result_view.setMessage(result_dict.get('message'))
         else:
