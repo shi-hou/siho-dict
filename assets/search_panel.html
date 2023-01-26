@@ -31,9 +31,29 @@
                     messageDiv.innerHTML = message
                 });
 
-                new ResizeObserver((entries) =>
-                    Bridge.setHeight(entries[0].target.scrollHeight)
-                ).observe(panelDiv);
+                // 监听网页高度，使webview和网页等高，使网页内部无法滚动
+                // new ResizeObserver((entries) =>
+                //     Bridge.setHeight(entries[0].target.scrollHeight)
+                // ).observe(panelDiv);
+                // Fix: 有时候有内容却获取高度为0而无法展示内容
+                const MutationObserver = window.MutationObserver || window.webkitMutationObserver || window.MozMutationObserver;
+
+                let recordHeight = 0;
+                new MutationObserver(function (mutations) {
+                    console.log(mutations);
+
+                    let height = panelDiv.scrollHeight;
+                    if (height === recordHeight) {
+                        return;
+                    }
+                    recordHeight = height;
+                    Bridge.setHeight(height)
+                }).observe(panelDiv, {
+                    childList: true, // 子节点的变动（新增、删除或者更改）
+                    attributes: true, // 属性的变动
+                    characterData: true, // 节点内容或节点文本的变动
+                    subtree: true // 是否将观察器应用于该节点的所有后代节点
+                })
             }
         );
 
