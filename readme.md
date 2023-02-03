@@ -1,7 +1,7 @@
 # siho-dict
 > Windows桌面划词翻译/查词工具
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/shi-hou/siho-dict?color=%23409EFF)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/shi-hou/siho-dict?color=%23409EFF)](https://github.com/shi-hou/siho-dict/releases)
 
 基于PyQt5的Windows桌面划词翻译/查词工具，支持有道词典、百度翻译和Moji辞書，支持将单词添加到Anki。
 
@@ -36,6 +36,9 @@ pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets
 - ...
 
 ## Release History
+- v0.2.2
+  - Update: 更新Moji的Anki模板
+  - Fix: 修复Moji查词面板内部可滚动问题
 - v0.2.1
   - Add: 添加Anki自动同步
   - Add: 添加查无结果时提示
