@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 
 import requests
 from retry import retry
@@ -312,12 +313,15 @@ def moji_fetch_word(word_id: str, title: str) -> dict:
     trans_html = '<ol>'
     for subdetail in result['subdetails']:
         trans_html += f'<li>{subdetail["title"]}</li>'
-        trans[subdetail['objectId']] = {
-            'title': f"[{parts_of_speech[subdetail['detailsId']]}]{subdetail['title']}"
-            if subdetail['detailsId'] in parts_of_speech
-            else subdetail['title'],
-            'examples': []
-        }
+        if subdetail['detailsId'] in parts_of_speech:
+            if parts_of_speech[subdetail['detailsId']]:
+                trans_title = f"[{parts_of_speech[subdetail['detailsId']]}]{subdetail['title']}"
+            else:
+                trans_title = subdetail['title']
+            trans[subdetail['objectId']] = {
+                'title': trans_title,
+                'examples': []
+            }
     trans_html += '</ol>'
     for example in result['examples']:
         if example['subdetailsId'] in trans:
@@ -412,14 +416,16 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
         front_template = utils.read_file('anki', 'moji', 'moji-front.html')
         back_template = utils.read_file('anki', 'moji', 'moji-back.html')
         card_templates = [{
-            "Name": "AnkiToMoji v2.0.0",
+            "Name": "MojiToAnki 3",
             "Front": front_template,
             "Back": back_template
         }]
         Anki.create_model(model_name, fields, css, card_templates)
 
-    if not Anki.is_media_file_existing('_HiraMinProN-W6.ttf'):
-        Anki.store_media_file('_HiraMinProN-W6.ttf', utils.get_resources_path('fonts', 'HiraMinProN-W6.ttf'))
+    media_file_list = [name for name in os.listdir(utils.get_resources_path('anki', 'moji')) if name.startswith('_')]
+    for media_file in media_file_list:
+        if not Anki.is_media_file_existing(media_file):
+            Anki.store_media_file(media_file, utils.get_resources_path('anki', 'moji', media_file))
 
     return deck_name, model_name
 

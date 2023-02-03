@@ -3,13 +3,22 @@
     src: url("_HiraMinProN-W6.ttf");
 }
 
-.replay-button svg {
-    width: 20px;
-    height: 20px;
+@font-face {
+    font-family: iconfont;
+    src: url("_iconfont.7a6f8a1.ttf");
 }
 
-.replay-button svg path {
-    fill: #FF5252;
+.iconfont {
+    font-family: "iconfont" !important;
+    font-size: 20px;
+    font-style: normal;
+    color: #FF5252;
+    padding: 20px;
+    margin: -20px;
+}
+
+.replay-button i:before {
+    content: "\e6c6";
 }
 
 .to-moji {
@@ -19,9 +28,19 @@
     margin: 3px;
 }
 
-.to-moji svg {
-    width: 20px;
-    height: 20px;
+.to-moji i:before {
+    content: "\e6c7"
+}
+
+.update-word {
+    text-decoration: none;
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 3px 3px 3px 10px;
+}
+
+.update-word i:before {
+    content: "\e6a7"
 }
 
 .card {
@@ -39,7 +58,6 @@
     background: #0e0e10;
 }
 
-
 .nightMode .spell, .nightMode .pron-and-accent {
     color: #fafafc;
 }
@@ -48,7 +66,7 @@
     color: #3d454c;
     font-size: 36px;
     font-weight: 600;
-    font-family: HiraMinProN-W6, HiraMinProN;
+    font-family: HiraMinProN-W6, HiraMinProN, 'Hiragino Kaku Gothic Pro', Meiryo, MS Gothic, Tahoma, Arial, PingFang SC, '黑体';
 }
 
 .pron-and-accent {
@@ -108,11 +126,14 @@
 }
 
 .note {
-    font-size: 15px;
-    color: #FF5252;
-    border: 1px solid #FF5252;
-    border-radius: 15px;
-    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #3d454c;
+    background: #fff0ab;
+    border: 1px solid #fff0ab;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 20px 0;
 }
 
 .sound {
