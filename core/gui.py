@@ -1,5 +1,6 @@
 import re
 import traceback
+import webbrowser
 from time import sleep
 
 import keyboard
@@ -15,7 +16,7 @@ from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplicatio
     QWidget
 from pyqtkeybind import keybinder
 
-from core import utils
+from core import utils, update
 from core.dicts import Dict, dicts
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, IToast
 
@@ -370,6 +371,29 @@ class SettingWindow(BaseWindow):
         load_tmp_file_size()
 
         setting_page.addWidget(tmp_file_group)
+
+        about_group = IGroup('关于')
+        tag_label = ILineEdit(update.TAG)
+        tag_label.setEnabled(False)
+        about_group.addRow('版本信息', tag_label)
+
+        def check_for_update():
+            update_info = update.check_for_update()
+            if not update_info.get('success'):
+                IToast.showToast(self, '获取更新信息失败')
+                return
+            if update_info.get('is_latest'):
+                IToast.showToast(self, '已是最新版本，无需更新')
+                return
+            webbrowser.open(update_info.get('latest_download_url'))
+
+        about_group.addButton('检查更新', check_for_update)
+
+        def open_github_page():
+            webbrowser.open(update.GITHUB_URL)
+
+        about_group.addButton('打开Github页面', open_github_page)
+        setting_page.addWidget(about_group)
 
         setting_page.addSpacing(100)
 
