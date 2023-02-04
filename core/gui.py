@@ -541,10 +541,7 @@ class ResultView(QWebEngineView):
 
     # 使鼠标光标停在网页内时可以进行滚动
     def wheelEvent(self, event: QWheelEvent) -> None:
-        delta_y = event.angleDelta().y() / 2
-        # 获取IPage的滚动条
-        page_scroll_bar = self.nativeParentWidget().page.verticalScrollBar()
-        page_scroll_bar.setValue(page_scroll_bar.value() - delta_y)
+        self.nativeParentWidget().page.wheelEvent(event)
 
     @pyqtSlot(str)
     def audioBtnOnclick(self, filename: str):
