@@ -196,8 +196,10 @@ class TransWindow(BaseWindow):
                 current_txt = self.input_txt
             else:  # 来自划词
                 former_copy = pyperclip.paste()  # 用于还原剪切板
-                keyboard.press_and_release('ctrl+c')
-                sleep(0.1)
+                keyboard.release('alt')
+                keyboard.release('shift')
+                keyboard.send('ctrl+c')
+                sleep(.01)
                 current_txt = pyperclip.paste()
                 pyperclip.copy(former_copy)  # 还原剪切版
             current_txt = current_txt.strip().replace('\n', ' ')

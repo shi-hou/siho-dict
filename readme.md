@@ -28,7 +28,6 @@ pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets
 
 - 百度翻译的发音绝大多数时候会获取失败
 - 启动后第一次翻译会有卡顿现象
-- 在部分软件使用（如IDEA）会因快捷键冲突而产生问题
 
 ## TODO
 
