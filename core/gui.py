@@ -403,7 +403,7 @@ class SettingWindow(BaseWindow2):
 class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
-        self.setIcon(QIcon(QPixmap(utils.get_resources_path('icon', '翻译.svg'))))
+        self.setIcon(QIcon(QPixmap(utils.get_resources_path('icon', 'logo-icon.png'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
         self.menu_open_trans_act = self.menu.addAction('显示翻译窗口')

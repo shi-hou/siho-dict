@@ -28,7 +28,7 @@ class BaseWindow(QMainWindow):
     def init_window(self, title="", title_bar_slot=None):
 
         self.setWindowTitle(title)
-        self.setWindowIcon(QIcon(QPixmap(utils.get_resources_path('icon', '翻译.svg'))))
+        self.setWindowIcon(QIcon(QPixmap(utils.get_resources_path('icon', 'logo-icon.png'))))
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 

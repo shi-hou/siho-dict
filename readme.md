@@ -1,9 +1,6 @@
 <p align="center">
-  <img width="15%" align="center" src="assets/icon/翻译.svg" alt="logo">
+  <img width="50%" align="center" src="assets/icon/logo.png" alt="logo">
 </p>
-  <h1 align="center">
-  siho-dict
-</h1>
 <p align="center">
   基于PyQt5的Windows桌面划词翻译/查词工具
 </p>
@@ -34,7 +31,7 @@
 或者自行将代码进行打包:
 
 ```
-pyinstaller -i "assets\icon\翻译.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
+pyinstaller -i "assets\icon\logo-icon.png" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
 ```
 
 ## 使用
