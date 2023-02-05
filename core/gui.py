@@ -19,6 +19,7 @@ from pyqtkeybind import keybinder
 from core import utils, update
 from core.dicts import Dict, dicts
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, IToast
+from core.widgets.BaseWindow import BaseWindow2
 
 
 class MainWindow(QMainWindow):
@@ -243,20 +244,21 @@ class TransWindow(BaseWindow):
             self.is_running = False
 
 
-class SettingWindow(BaseWindow):
+class SettingWindow(BaseWindow2):
     def __init__(self):
-        super().__init__(title='设置')
+        super().__init__()
         self.hotkey_edit = ILineEdit()
         self.dict_switch_list = []
         self.init()
 
     def init(self):
-        self.setFixedSize(800, 500)
+        self.resize(800, 500)
+        self.setMinimumWidth(550)
 
         config = utils.get_config()
-
+        self.setWindowTitle('设置')
         setting_page = IPage()
-        self.setPage(setting_page)
+        self.setCentralWidget(setting_page)
 
         basic_setting_group = IGroup('基础设置')
         auto_run_switch = ISwitch(on=utils.get_auto_run())

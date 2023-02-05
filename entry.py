@@ -29,9 +29,14 @@ def except_hook(exc_type, exc_value, exc_tb):
 
 sys.excepthook = except_hook
 # os.environ['QTWEBENGINE_REMOTE_DEBUGGING'] = '9966'  # 打开QWebEngineView调试控制台 http://localhost:9966
+# enable dpi scale
+QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
+
+QApplication.setQuitOnLastWindowClosed(False)
 app = QApplication(sys.argv)
-app.setQuitOnLastWindowClosed(False)
 app.setStyleSheet(utils.read_file('qss', 'global-style.qss'))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('fonts', 'PingFang SC Medium.ttf'))
 QtGui.QFontDatabase.addApplicationFont(utils.get_resources_path('fonts', 'PingFang SC Regular.ttf'))

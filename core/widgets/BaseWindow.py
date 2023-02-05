@@ -2,6 +2,7 @@ import win32con
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QMainWindow
+from qframelesswindow import FramelessMainWindow
 from win32api import SendMessage
 from win32gui import ReleaseCapture
 
@@ -81,3 +82,11 @@ class BaseWindow(QMainWindow):
         index = self.title_bar_layout.count() - 1
         self.title_bar_layout.insertWidget(index, btn)
         return btn
+
+
+class BaseWindow2(FramelessMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowIcon(QIcon(utils.get_resources_path('icon', 'logo-icon.png')))
+        self.titleBar.setAttribute(Qt.WA_StyledBackground)
+        self.setMenuWidget(self.titleBar)

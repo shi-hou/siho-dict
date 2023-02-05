@@ -1,3 +1,7 @@
+TitleBar {
+    background: white;
+}
+
 .title-bar {
     background-color: #409EFF;
     border-top-left-radius: 10px;
