@@ -1,5 +1,5 @@
 TitleBar {
-    background: white;
+    background: #409EFF;
 }
 
 .title-bar {
@@ -37,6 +37,12 @@ TitleBar {
 
 .title-bar .close-btn:pressed {
     background-color: indianred;
+}
+
+TitleBarButton {
+    qproperty-normalColor: white;
+    qproperty-hoverColor: white;
+    qproperty-pressedColor: white;
 }
 
 BaseWindow .main-widget {

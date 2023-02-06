@@ -15,11 +15,11 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEng
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout, QLabel, QHBoxLayout, \
     QWidget
 from pyqtkeybind import keybinder
+from qframelesswindow import FramelessMainWindow
 
 from core import utils, update
 from core.dicts import Dict, dicts
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, IToast
-from core.widgets.BaseWindow import BaseWindow2
 
 
 class MainWindow(QMainWindow):
@@ -74,7 +74,7 @@ class TransWindow(BaseWindow):
     def __init__(self):
         self.input_edit = QLineEdit()
         super().__init__(title_bar_slot=self.input_edit)
-        self.fix_btn = self.addTitleBarButton(icon=utils.get_resources_path('icon', '固定_line.svg'))
+        self.fix_btn = self.addTitleBarButton(icon=utils.get_asset_path('icon', '固定_line.svg'))
         self.result_list_widget = ResultViewListWidget()
         self.thread_pool = QThreadPool(self)
         self.thread_pool.setMaxThreadCount(4)
@@ -108,7 +108,7 @@ class TransWindow(BaseWindow):
                 self.show_window = self.WindowShowWorker(self.show_signal, self.frameGeometry(), input_txt)
                 self.thread_pool.start(self.show_window)
 
-        fold_btn = self.addTitleBarButton(icon=utils.get_resources_path('icon', '折叠面板.svg'))
+        fold_btn = self.addTitleBarButton(icon=utils.get_asset_path('icon', '折叠面板.svg'))
 
         @fold_btn.clicked.connect
         def fold_button_on_click():
@@ -178,7 +178,7 @@ class TransWindow(BaseWindow):
     def setFixNotHidden(self, value: bool):
         self.fix_not_hidden = value
         self.fix_btn.setIcon(
-            QIcon(QPixmap(utils.get_resources_path('icon', '固定_fill.svg' if value else '固定_line.svg'))))
+            QIcon(QPixmap(utils.get_asset_path('icon', '固定_fill.svg' if value else '固定_line.svg'))))
 
     def stopLoad(self):
         for loader in self.trans_loaders:
@@ -244,7 +244,7 @@ class TransWindow(BaseWindow):
             self.is_running = False
 
 
-class SettingWindow(BaseWindow2):
+class SettingWindow(FramelessMainWindow):
     def __init__(self):
         super().__init__()
         self.hotkey_edit = ILineEdit()
@@ -252,11 +252,15 @@ class SettingWindow(BaseWindow2):
         self.init()
 
     def init(self):
+        super().__init__()
+        self.setWindowTitle('设置')
+        self.setWindowIcon(QIcon(utils.get_asset_path('icon', 'logo-icon.png')))
+        self.titleBar.setAttribute(Qt.WA_StyledBackground)
+        self.setMenuWidget(self.titleBar)
         self.resize(800, 500)
         self.setMinimumWidth(550)
 
         config = utils.get_config()
-        self.setWindowTitle('设置')
         setting_page = IPage()
         self.setCentralWidget(setting_page)
 
@@ -403,12 +407,12 @@ class SettingWindow(BaseWindow2):
 class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
-        self.setIcon(QIcon(QPixmap(utils.get_resources_path('icon', 'logo-icon.png'))))
+        self.setIcon(QIcon(QPixmap(utils.get_asset_path('icon', 'logo-icon.png'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
         self.menu_open_trans_act = self.menu.addAction('显示翻译窗口')
-        self.menu_open_setting_act = self.menu.addAction('设置', utils.get_resources_path('icon', '设置.svg'))
-        self.menu_quit_act = self.menu.addAction('退出', utils.get_resources_path('icon', '退出.svg'))
+        self.menu_open_setting_act = self.menu.addAction('设置', utils.get_asset_path('icon', '设置.svg'))
+        self.menu_quit_act = self.menu.addAction('退出', utils.get_asset_path('icon', '退出.svg'))
         self.setContextMenu(self.menu)
 
         @self.menu_quit_act.triggered.connect
@@ -467,7 +471,7 @@ class ResultViewWidget(QWidget):
         icon_label = QLabel()
         icon_label.setFixedHeight(15)
         icon_label.setFixedWidth(15)
-        icon = utils.get_resources_path('icon', self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
+        icon = utils.get_asset_path('icon', self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
         icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 3px;')
         title_layout.addWidget(icon_label)
 
@@ -523,8 +527,8 @@ class ResultView(QWebEngineView):
         self.channel = QWebChannel(self)
         self.page().setWebChannel(self.channel)
         self.channel.registerObject('Bridge', self)
-        self.load(QUrl.fromLocalFile(utils.get_resources_path('search_panel.html')))
-        with open(utils.get_resources_path(dictionary.template), encoding="utf-8") as f:
+        self.load(QUrl.fromLocalFile(utils.get_asset_path('search_panel.html')))
+        with open(utils.get_asset_path(dictionary.template), encoding="utf-8") as f:
             self.template = f.read()
             f.close()
         self.sound_icon = dictionary.audio_icon

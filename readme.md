@@ -48,7 +48,6 @@ pyinstaller -i "assets\icon\logo-icon.png" -n "siho-dict" --add-data "assets;ass
 ## Bugs
 
 - 百度翻译的发音绝大多数时候会获取失败
-- 启动后第一次翻译会有卡顿现象
 
 ## TODO
 

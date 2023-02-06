@@ -68,7 +68,7 @@ def get_app_dir_path():
     return os.path.dirname(os.path.abspath(sys.argv[0]))
 
 
-def get_resources_path(*resource_name: str):
+def get_asset_path(*resource_name: str):
     return os.path.join(get_app_dir_path(), "assets", *resource_name)
 
 
@@ -76,8 +76,8 @@ def get_app_exe_path():
     return os.path.realpath(os.path.abspath(sys.argv[0]))
 
 
-def read_file(*file_path: str) -> str:
-    with open(get_resources_path(*file_path), 'r', encoding='UTF-8') as f:
+def read_asset_file(*file_path: str) -> str:
+    with open(get_asset_path(*file_path), 'r', encoding='UTF-8') as f:
         result_txt = f.read()
         f.close()
     return result_txt

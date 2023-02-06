@@ -130,9 +130,9 @@ def youdao_create_deck_and_model_if_not_exists() -> (str, str):
     if not Anki.is_model_existing(model_name):
         fields = ['return-phrase', 'speech', 'ukphone', 'ukspeech', 'usphone', 'usspeech', 'trans_html', 'exam_type']
 
-        css = utils.read_file('anki', 'youdao', 'youdao-style.css')
-        front_template = utils.read_file('anki', 'youdao', 'youdao-front.html')
-        back_template = utils.read_file('anki', 'youdao', 'youdao-back.html')
+        css = utils.read_asset_file('anki', 'youdao', 'youdao-style.css')
+        front_template = utils.read_asset_file('anki', 'youdao', 'youdao-front.html')
+        back_template = utils.read_asset_file('anki', 'youdao', 'youdao-back.html')
         card_templates = [{
                 "Name": "单词",
                 "Front": front_template,
@@ -236,9 +236,9 @@ def baidu_create_deck_and_model_if_not_exists() -> (str, str):
     model_name = config.get('anki-baidu-model', 'Baidu')
     if not Anki.is_model_existing(model_name):
         fields = ['text', 'pron_uk', 'voice_uk', 'pron_us', 'voice_us', 'trans']
-        css = utils.read_file('anki', 'baidu', 'baidu-style.css')
-        front_template = utils.read_file('anki', 'baidu', 'baidu-front.html')
-        back_template = utils.read_file('anki', 'baidu', 'baidu-back.html')
+        css = utils.read_asset_file('anki', 'baidu', 'baidu-style.css')
+        front_template = utils.read_asset_file('anki', 'baidu', 'baidu-front.html')
+        back_template = utils.read_asset_file('anki', 'baidu', 'baidu-back.html')
         card_templates = [{
             "Name": "单词",
             "Front": front_template,
@@ -412,9 +412,9 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
     if not Anki.is_model_existing(model_name):
         fields = ['title', 'note', 'target_id', 'target_type', 'spell', 'accent', 'pron', 'excerpt', 'sound', 'link',
                   'part_of_speech', 'trans', 'examples']
-        css = utils.read_file('anki', 'moji', 'moji-style.css')
-        front_template = utils.read_file('anki', 'moji', 'moji-front.html')
-        back_template = utils.read_file('anki', 'moji', 'moji-back.html')
+        css = utils.read_asset_file('anki', 'moji', 'moji-style.css')
+        front_template = utils.read_asset_file('anki', 'moji', 'moji-front.html')
+        back_template = utils.read_asset_file('anki', 'moji', 'moji-back.html')
         card_templates = [{
             "Name": "MojiToAnki 3",
             "Front": front_template,
@@ -422,10 +422,10 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
         }]
         Anki.create_model(model_name, fields, css, card_templates)
 
-    media_file_list = [name for name in os.listdir(utils.get_resources_path('anki', 'moji')) if name.startswith('_')]
+    media_file_list = [name for name in os.listdir(utils.get_asset_path('anki', 'moji')) if name.startswith('_')]
     for media_file in media_file_list:
         if not Anki.is_media_file_existing(media_file):
-            Anki.store_media_file(media_file, utils.get_resources_path('anki', 'moji', media_file))
+            Anki.store_media_file(media_file, utils.get_asset_path('anki', 'moji', media_file))
 
     return deck_name, model_name
 

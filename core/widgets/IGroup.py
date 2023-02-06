@@ -71,7 +71,7 @@ class IGroup(QWidget):
                 icon_label = QLabel()
                 icon_label.setFixedHeight(30)
                 icon_label.setFixedWidth(30)
-                icon = utils.get_resources_path('icon', icon).replace('\\', '/')  # url()用“\”会不生效
+                icon = utils.get_asset_path('icon', icon).replace('\\', '/')  # url()用“\”会不生效
                 icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 10px;')
                 self.row_layout.addWidget(icon_label)
 
