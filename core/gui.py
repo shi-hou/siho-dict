@@ -198,8 +198,9 @@ class TransWindow(BaseWindow):
                 current_txt = self.input_txt
             else:  # 来自划词
                 former_copy = pyperclip.paste()  # 用于还原剪切板
-                keyboard.release('alt')
-                keyboard.release('shift')
+                hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
+                for key in hotkey.split('+'):
+                    keyboard.release(key)
                 keyboard.send('ctrl+c')
                 sleep(.01)
                 current_txt = pyperclip.paste()
