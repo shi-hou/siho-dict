@@ -308,35 +308,20 @@ class SettingWindow(FramelessMainWindow):
         anki_key_input.editingFinished.connect(lambda: utils.update_config({'anki-key': anki_key_input.text()}))
         anki_setting_group.addRow('Key', anki_key_input)
 
-        anki_youdao_deck_input = ILineEdit(config.get('anki-youdao-deck', 'Youdao'))
-        anki_youdao_deck_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-youdao-deck': anki_youdao_deck_input.text()}))
-        anki_setting_group.addRow('有道牌组', anki_youdao_deck_input)
-
-        anki_youdao_model_input = ILineEdit(config.get('anki-youdao-model', 'Youdao'))
-        anki_youdao_model_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-youdao-model': anki_youdao_model_input.text()}))
-        anki_setting_group.addRow('有道笔记模板', anki_youdao_model_input)
-
-        anki_baidu_deck_input = ILineEdit(config.get('anki-baidu-deck', 'Baidu'))
-        anki_baidu_deck_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-baidu-deck': anki_baidu_deck_input.text()}))
-        anki_setting_group.addRow('百度牌组', anki_baidu_deck_input)
-
-        anki_baidu_model_input = ILineEdit(config.get('anki-baidu-model', 'Baidu'))
-        anki_baidu_model_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-baidu-model': anki_baidu_model_input.text()}))
-        anki_setting_group.addRow('百度笔记模板', anki_baidu_model_input)
-
-        anki_moji_deck_input = ILineEdit(config.get('anki-moji-deck', 'Moji'))
-        anki_moji_deck_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-moji-deck': anki_moji_deck_input.text()}))
-        anki_setting_group.addRow('Moji牌组', anki_moji_deck_input)
-
-        anki_moji_model_input = ILineEdit(config.get('anki-moji-model', 'Moji'))
-        anki_moji_model_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-moji-model': anki_moji_model_input.text()}))
-        anki_setting_group.addRow('Moji笔记模板', anki_moji_model_input)
+        for dictionary in dicts.all_dict:
+            if dictionary.is_anki_able():
+                dict_name = dictionary.name
+                dict_title = dictionary.title
+                deck_name_config_key = f'anki-{dict_name}-deck'
+                model_name_config_key = f'anki-{dict_name}-model'
+                anki_deck_input = ILineEdit(config.get(deck_name_config_key, dict_name.title()))
+                anki_deck_input.editingFinished.connect(
+                        lambda: utils.update_config({deck_name_config_key: anki_deck_input.text()}))
+                anki_setting_group.addRow(f'{dict_title}牌组', anki_deck_input)
+                anki_model_input = ILineEdit(config.get(model_name_config_key, dict_name.title()))
+                anki_model_input.editingFinished.connect(
+                    lambda: utils.update_config({model_name_config_key: anki_model_input.text()}))
+                anki_setting_group.addRow(f'{dict_title}笔记模板', anki_model_input)
 
         anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
         anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))

@@ -44,12 +44,3 @@ pyinstaller -i "assets\icon\logo-icon.png" -n "siho-dict" --add-data "assets;ass
 ### 将单词添加到Anki
 
 - 见Wiki，[Anki自动制卡](https://github.com/shi-hou/siho-dict/wiki/Anki%E8%87%AA%E5%8A%A8%E5%88%B6%E5%8D%A1)
-
-## Bugs
-
-- 百度翻译的发音绝大多数时候会获取失败
-
-## TODO
-
-- 添加输入框Suggest
-- ...

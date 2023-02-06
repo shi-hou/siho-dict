@@ -134,9 +134,9 @@ def youdao_create_deck_and_model_if_not_exists() -> (str, str):
         front_template = utils.read_asset_file('anki', 'youdao', 'youdao-front.html')
         back_template = utils.read_asset_file('anki', 'youdao', 'youdao-back.html')
         card_templates = [{
-                "Name": "单词",
-                "Front": front_template,
-                "Back": back_template
+            "Name": "单词",
+            "Front": front_template,
+            "Back": back_template
         }]
         Anki.create_model(model_name, fields, css, card_templates)
     return deck_name, model_name
@@ -154,7 +154,6 @@ def baidu_lang_detect(text):
     return utils.request_post('https://fanyi.baidu.com/langdetect', json={'query': text}).json()['lan']
 
 
-# TODO 百度获取发音十有八九为空, b''
 def baidu_trans(text, _) -> dict:
     from_lang = baidu_lang_detect(text)
     # 非中文->中文, 中文(也可能是日文)->英文
@@ -178,18 +177,8 @@ def baidu_trans(text, _) -> dict:
             result_body['support-anki'] = True
             if voice[0]['en_phonic']:
                 result_body['pron_uk'] = f"英{voice[0]['en_phonic']}"
-                result_body['voice_uk'] = {
-                    'type': 'audio',
-                    'filename': f'baidu_uk_{text}.mp3',
-                    'url': f'https://fanyi.baidu.com/gettts?lan=uk&text={text}&spd=3&source=web',
-                }
             if voice[1]['us_phonic']:
                 result_body['pron_us'] = f"美{voice[1]['us_phonic']}"
-                result_body['voice_us'] = {
-                    'type': 'audio',
-                    'filename': f'baidu_us_{text}.mp3',
-                    'url': f'https://fanyi.baidu.com/gettts?lan=en&text={text}&spd=3&source=web'
-                }
         trans = ''
         for mean in result['content'][0]['mean']:
             trans += f'''<div class="pos">{mean.get('pre', '')}</div>'''
@@ -198,54 +187,6 @@ def baidu_trans(text, _) -> dict:
         trans = f'''<div>{resp['data'][0]['dst']}</div>'''
     result_body['trans'] = trans
     return result_body
-
-
-def baidu_add_anki_note(data: dict) -> str:
-    deck_name, model_name = baidu_create_deck_and_model_if_not_exists()
-
-    fields = data.copy()
-    fields['voice_uk'] = ''
-    fields['voice_us'] = ''
-
-    if not Anki.can_add_note(deck_name, model_name, fields):
-        return '单词已存在, 无需重复添加'
-
-    audio = []
-    audio_titles = ['voice_uk', 'voice_us']
-    for title in audio_titles:
-        voice = data.get(title)
-        if voice:
-            filename = voice.get('filename')
-            path = utils.store_tmp_file(filename, voice.get('url'))
-            audio.append({
-                'path': path,
-                'filename': filename,
-                'fields': [title]
-            })
-
-    Anki.add_note(deck_name, model_name, fields, audio)
-    return '添加成功'
-
-
-def baidu_create_deck_and_model_if_not_exists() -> (str, str):
-    config = utils.get_config()
-
-    deck_name = config.get('anki-baidu-deck', 'Baidu')
-    Anki.create_deck_if_not_exists(deck_name)
-
-    model_name = config.get('anki-baidu-model', 'Baidu')
-    if not Anki.is_model_existing(model_name):
-        fields = ['text', 'pron_uk', 'voice_uk', 'pron_us', 'voice_us', 'trans']
-        css = utils.read_asset_file('anki', 'baidu', 'baidu-style.css')
-        front_template = utils.read_asset_file('anki', 'baidu', 'baidu-front.html')
-        back_template = utils.read_asset_file('anki', 'baidu', 'baidu-back.html')
-        card_templates = [{
-            "Name": "单词",
-            "Front": front_template,
-            "Back": back_template
-        }]
-        Anki.create_model(model_name, fields, css, card_templates)
-    return deck_name, model_name
 
 
 # </editor-fold>
@@ -449,7 +390,7 @@ dict_list = [
         'anki-create-deck-and-model': youdao_create_deck_and_model_if_not_exists  # 创建Anki牌组和模板, 返回牌组名和模板名
     },
     {
-        'name': 'baidu-v1',
+        'name': 'baidu',
         'able': True,
         'title': '百度翻译',
         'icon': 'baidu-trans-logo.png',
@@ -457,11 +398,9 @@ dict_list = [
         'template': 'baidu-panel.html',
         'func': baidu_trans,
         'style-file': 'baidu-panel.css',
-        'anki-add-note': baidu_add_anki_note,
-        'anki-create-deck-and-model': baidu_create_deck_and_model_if_not_exists
     },
     {
-        'name': 'moji-search',
+        'name': 'moji',
         'able': True,
         'title': 'Moji辞書',
         'exclude_lang': ['en'],
