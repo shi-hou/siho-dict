@@ -1,5 +1,6 @@
 certifi==2022.12.7
 charset-normalizer==3.0.1
+darkdetect==0.8.0
 decorator==5.1.1
 docopt==0.6.2
 idna==3.4
@@ -11,7 +12,9 @@ pipreqs==0.4.11
 py==1.11.0
 pyperclip==1.8.2
 pypiwin32==223
+PyQt-Fluent-Widgets==0.2.3
 PyQt5==5.15.8
+PyQt5-Frameless-Window==0.2.1
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.11.1
 pyqt5Custom==1.0.1
