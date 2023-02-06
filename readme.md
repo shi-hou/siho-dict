@@ -1,6 +1,9 @@
 <p align="center">
   <img width="50%" align="center" src="assets/icon/logo.png" alt="logo">
 </p>
+
+---
+
 <p align="center">
   基于PyQt5的Windows桌面划词翻译/查词工具
 </p>
