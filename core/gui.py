@@ -254,7 +254,7 @@ class SettingWindow(FramelessMainWindow):
 
     def init(self):
         self.setWindowTitle('设置')
-        self.setWindowIcon(QIcon(utils.get_asset_path('icon', 'logo-icon.png')))
+        self.setWindowIcon(QIcon(utils.get_asset_path('icon', 'logo-icon.ico')))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)
         self.setMenuWidget(self.titleBar)
         self.resize(800, 500)
@@ -392,7 +392,7 @@ class SettingWindow(FramelessMainWindow):
 class TrayIcon(QSystemTrayIcon):
     def __init__(self):
         super().__init__()
-        self.setIcon(QIcon(QPixmap(utils.get_asset_path('icon', 'logo-icon.png'))))
+        self.setIcon(QIcon(QPixmap(utils.get_asset_path('icon', 'logo-icon.ico'))))
         self.setToolTip('划词翻译')
         self.menu = IMenu()
         self.menu_open_trans_act = self.menu.addAction('显示翻译窗口')

@@ -34,7 +34,7 @@
 或者自行将代码进行打包:
 
 ```
-pyinstaller -i "assets\icon\logo-icon.png" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
+pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
 ```
 
 ## 使用

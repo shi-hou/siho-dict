@@ -394,7 +394,6 @@ dict_list = [
         'able': True,
         'title': '百度翻译',
         'icon': 'baidu-trans-logo.png',
-        'audio-icon': 'audio-blue.svg',
         'template': 'baidu-panel.html',
         'func': baidu_trans,
         'style-file': 'baidu-panel.css',
@@ -458,9 +457,9 @@ class Dicts:
 
 
 class Dict:
-    def __init__(self, name: str, able: bool, on: bool, title: str, exclude_lang: list, icon: str, audio_icon: str,
-                 template: str, func=None, style_file: str = None, anki_add_note_func=None,
-                 anki_create_deck_and_model=None):
+    def __init__(self, name: str, able: bool, on: bool, title: str, exclude_lang: list, icon: str,
+                 audio_icon: str = None, template: str = None, func=None, style_file: str = None,
+                 anki_add_note_func=None, anki_create_deck_and_model=None):
         self.name = name
         self.able = able
         self.on = on
