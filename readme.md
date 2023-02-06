@@ -29,7 +29,7 @@
 
 ## 安装
 
-前往 [release](https://github.com/shi-hou/siho-dict/releases) 下载最新版本的zip压缩包，解压运行siho-dict.exe即可。
+前往 [release](https://github.com/shi-hou/siho-dict/releases) 下载最新版本的程序压缩包，解压运行siho-dict.exe即可。
 
 或者自行将代码进行打包:
 
