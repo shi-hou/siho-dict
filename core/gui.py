@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
             self.setting_window.activateWindow()
 
         @self.setting_window.hotkey_edit.editingFinished.connect
-        def slot():
+        def change_hotkey():
             if self.setting_window.hotkey_edit.isModified():
                 original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
                 new_hotkey = self.setting_window.hotkey_edit.text()
@@ -253,7 +253,6 @@ class SettingWindow(FramelessMainWindow):
         self.init()
 
     def init(self):
-        super().__init__()
         self.setWindowTitle('设置')
         self.setWindowIcon(QIcon(utils.get_asset_path('icon', 'logo-icon.png')))
         self.titleBar.setAttribute(Qt.WA_StyledBackground)
