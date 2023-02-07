@@ -5,5 +5,7 @@
 /venv
 /tmp
 *.spec
-test*.py
+test*.*
 config.json
+.gitignore
+TODO.txt

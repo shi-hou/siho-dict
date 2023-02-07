@@ -1,12 +1,20 @@
 import hashlib
 import json
 import os
+import re
 
 import requests
 from retry import retry
 
 from core import utils
 from core.anki import Anki
+
+
+def md5(t):
+    m = hashlib.md5()
+    m.update(t.encode('utf-8'))
+    return m.hexdigest()
+
 
 '''====================================================有道词典===================================================='''
 
@@ -20,18 +28,13 @@ def youdao_search(q: str, _):
     x = "Mk6hqtUp33DGGtoS63tTJbMUYjRrG1Lu"
     r = q + k
 
-    def y(t):
-        m = hashlib.md5()
-        m.update(t.encode('utf-8'))
-        return m.hexdigest()
-
     resp = utils.request_post(url='https://dict.youdao.com/jsonapi_s?doctype=json&jsonversion=4',
                               data={
                                   'q': q,
                                   'le': 'en',
                                   't': time,
                                   'client': S,
-                                  'sign': y(S + q + str(time) + x + y(r)),
+                                  'sign': md5(S + q + str(time) + x + md5(r)),
                                   'keyfrom': k
                               })
     resp_json = resp.json()
@@ -191,10 +194,30 @@ def baidu_trans(text, _) -> dict:
 
 # </editor-fold>
 
+
+'''====================================================金山词霸翻译===================================================='''
+
+
+# <editor-fold desc="金山词霸翻译">
+
+def iciba_translate(text: str, _) -> dict:
+    sign = md5("6key_web_fanyi" + 'ifanyiweb8hc9s98e' + re.compile('(^\s*)|(\s*$)').sub('', text))[:16]
+    resp = utils.request_post(
+        f'http://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_fanyi&sign={sign}', data={
+            'from': 'auto',
+            'to': 'zh',
+            'q': text
+        }).json()
+    out = resp.get('content').get('out')
+    return {'out': out.replace('\n', '<br>').replace('\r', '<br>')}
+
+
+# </editor-fold>
+
+
 '''====================================================Moji辞書===================================================='''
 
 # <editor-fold desc="Moji辞書">
-
 
 _ClientVersion = 'js2.12.0'
 _ApplicationId = 'E62VyFVLMiW7kvbtVq3p'
@@ -373,6 +396,7 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
 
 # </editor-fold>
 
+
 '''====================================================词典列表===================================================='''
 
 dict_list = [
@@ -397,6 +421,15 @@ dict_list = [
         'template': 'baidu-panel.html',
         'func': baidu_trans,
         'style-file': 'baidu-panel.css',
+    },
+    {
+        'name': 'iciba-trans',
+        'able': True,
+        'title': '金山词霸翻译',
+        'icon': 'iciba-logo.png',
+        'template': 'iciba-trans-panel.html',
+        'style-file': 'iciba-panel.css',
+        'func': iciba_translate,
     },
     {
         'name': 'moji',
