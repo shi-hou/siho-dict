@@ -23,5 +23,5 @@ pywin32==305
 requests==2.28.2
 retry==0.9.2
 urllib3==1.26.14
-sihodictapi==0.1.0
-requestsp==0.0.1
+sihodictapi==0.1.2
+requestspr==0.0.1
