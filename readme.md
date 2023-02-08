@@ -54,7 +54,7 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;ass
 
 ### 将单词添加到Anki
 
-- 见Wiki，[Anki自动制卡](https://github.com/shi-hou/siho-dict/wiki/Anki%E8%87%AA%E5%8A%A8%E5%88%B6%E5%8D%A1)
+- [Anki自动制卡](docs/Anki自动制卡.md)
 
 ## TODO
 
