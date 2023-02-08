@@ -1,20 +1,12 @@
-import hashlib
 import json
 import os
-import re
 
 import requests
 from retry import retry
+from sihodictapi import Youdao, Baidu, Iciba, Moji
 
 from core import utils
 from core.anki import Anki
-
-
-def md5(t):
-    m = hashlib.md5()
-    m.update(t.encode('utf-8'))
-    return m.hexdigest()
-
 
 '''====================================================有道词典===================================================='''
 
@@ -22,22 +14,7 @@ def md5(t):
 # <editor-fold desc="有道词典">
 
 def youdao_search(q: str, _):
-    S = "web"
-    k = "webdict"
-    time = len(q + k) % 10
-    x = "Mk6hqtUp33DGGtoS63tTJbMUYjRrG1Lu"
-    r = q + k
-
-    resp = utils.request_post(url='https://dict.youdao.com/jsonapi_s?doctype=json&jsonversion=4',
-                              data={
-                                  'q': q,
-                                  'le': 'en',
-                                  't': time,
-                                  'client': S,
-                                  'sign': md5(S + q + str(time) + x + md5(r)),
-                                  'keyfrom': k
-                              })
-    resp_json = resp.json()
+    resp_json = Youdao.dict_search(q)
     result_body = {}
     fanyi = resp_json.get('fanyi')
     if fanyi:  # 输入为句子, 机器翻译
@@ -153,20 +130,10 @@ def youdao_create_deck_and_model_if_not_exists() -> (str, str):
 
 # <editor-fold desc="百度翻译">
 
-def baidu_lang_detect(text):
-    return utils.request_post('https://fanyi.baidu.com/langdetect', json={'query': text}).json()['lan']
-
-
 def baidu_trans(text, _) -> dict:
-    from_lang = baidu_lang_detect(text)
-    # 非中文->中文, 中文(也可能是日文)->英文
-    to_lang = 'zh' if from_lang != 'zh' else 'en'
-    resp = utils.request_post('https://fanyi.baidu.com/transapi', json={
-        'from': from_lang,
-        'to': to_lang,
-        'query': text,
-        'source': 'txt'
-    }).json()
+    text = text.replace('\n', ' ').replace('\r', ' ')
+    from_lang = Baidu.lang_detect(text).get('lan')
+    resp = Baidu.translate(text, from_lang)
     resp_type = resp['type']
     result_body = {
         'from_lang': from_lang,
@@ -201,13 +168,7 @@ def baidu_trans(text, _) -> dict:
 # <editor-fold desc="金山词霸翻译">
 
 def iciba_translate(text: str, _) -> dict:
-    sign = md5("6key_web_fanyi" + 'ifanyiweb8hc9s98e' + re.compile('(^\s*)|(\s*$)').sub('', text))[:16]
-    resp = utils.request_post(
-        f'http://ifanyi.iciba.com/index.php?c=trans&m=fy&client=6&auth_user=key_web_fanyi&sign={sign}', data={
-            'from': 'auto',
-            'to': 'zh',
-            'q': text
-        }).json()
+    resp = Iciba.translate(text)
     out = resp.get('content').get('out')
     return {'out': out.replace('\n', '<br>').replace('\r', '<br>')}
 
@@ -217,58 +178,19 @@ def iciba_translate(text: str, _) -> dict:
 
 '''====================================================Moji辞書===================================================='''
 
+
 # <editor-fold desc="Moji辞書">
-
-_ClientVersion = 'js2.12.0'
-_ApplicationId = 'E62VyFVLMiW7kvbtVq3p'
-_InstallationId = '7d959a18-48c4-243c-7486-632147466544'
-g_os = 'PCWeb'
-g_ver = 'v4.4.1.20221229'
-
-
-@retry(tries=3)
-def moji_login(email: str, password: str):
-    return utils.request_post('https://api.mojidict.com/parse/login', json={
-        "username": email,
-        "password": password,
-        "_ClientVersion": _ClientVersion,
-        "_ApplicationId": _ApplicationId,
-        "_InstallationId": _InstallationId
-    }).json().get('sessionToken')
 
 
 def moji_search(text, _) -> dict:
-    search_results = utils.request_post('https://api.mojidict.com/parse/functions/search_v3', json={
-        "_InstallationId": _InstallationId,
-        "_ClientVersion": _ClientVersion,
-        "_ApplicationId": _ApplicationId,
-        "langEnv": "zh-CN_ja",
-        "searchText": text
-    }).json().get('result').get('searchResults')
-
+    search_results = Moji.search_all(text, [Moji.DataType.Word]) \
+        .get('result').get('result').get('word').get('searchResult')
     if len(search_results) == 0:
         return {}
-
-    word_id = search_results[0].get('tarId')
-    title = search_results[0].get('title')
-    return moji_fetch_word(word_id, title)
-
-
-@retry(tries=3)
-def moji_fetch_word(word_id: str, title: str) -> dict:
-    result = utils.request_post('https://api.mojidict.com/parse/functions/nlt-fetchManyLatestWords', json={
-        "_InstallationId": _InstallationId,
-        "_ClientVersion": _ClientVersion,
-        "_ApplicationId": _ApplicationId,
-        "itemsJson": [{"objectId": word_id}],
-        "skipAccessories": False
-    }).json().get('result').get('result')[0]
+    target_id = search_results[0].get('targetId')
+    target_type = search_results[0].get('targetType')
+    result = moji_fetch_word(target_id)
     word = result.get('word')
-    tts_url = moji_tts_url(word_id, 102)
-    spell = word.get('spell')
-    accent = word.get('accent', '')
-    pron = word.get('pron', '')
-    excerpt = word.get('excerpt', '')
 
     parts_of_speech = {}
     trans = {}
@@ -301,19 +223,19 @@ def moji_fetch_word(word_id: str, title: str) -> dict:
         examples_html += '</div>'
     return {
         'support-anki': True,
-        'title': title,
-        'target_id': word_id,
-        'target_type': '102',
-        'spell': spell,
-        'accent': accent,
-        'pron': pron,
-        'excerpt': excerpt,
+        'title': search_results[0].get('title'),
+        'target_id': target_id,
+        'target_type': str(target_type),
+        'spell': word.get('spell'),
+        'accent': word.get('accent', ''),
+        'pron': word.get('pron', ''),
+        'excerpt': word.get('excerpt', ''),
         'sound': {
             'type': 'audio',
-            'filename': f'moji_{word_id}.mp3',
-            'url': tts_url
+            'filename': f'moji_{target_id}.mp3',
+            'url': Moji.tts_fetch(target_id, target_type).get('result').get('result').get('url')
         },
-        'link': moji_get_link(word_id, 102),
+        'link': Moji.data_url(target_id, target_type),
         'part_of_speech': " ".join(parts_of_speech.values()),
         'trans': trans_html,
         'examples': examples_html
@@ -321,26 +243,8 @@ def moji_fetch_word(word_id: str, title: str) -> dict:
 
 
 @retry(tries=3)
-def moji_tts_url(tarId: str, tarType: int):
-    return utils.request_post('https://api.mojidict.com/parse/functions/tts-fetch', json={
-        "_InstallationId": _InstallationId,
-        "_ClientVersion": _ClientVersion,
-        "_ApplicationId": _ApplicationId,
-        "tarId": tarId,
-        "tarType": tarType,
-        "voiceId": "f000"
-    }).json().get('result').get('result').get('url')
-
-
-def moji_get_link(tar_id, tar_type):
-    if tar_type == 102:
-        return "https://www.mojidict.com/details/" + tar_id
-    elif tar_type == 103:
-        return "https://www.mojidict.com/example/" + tar_id
-    elif tar_type == 120:
-        return "https://www.mojidict.com/sentence/" + tar_id
-    else:
-        return ''
+def moji_fetch_word(word_id: str) -> dict:
+    return Moji.fetch_words(word_id).get('result').get('result')[0]
 
 
 def moji_add_anki_note(data: dict) -> str:
