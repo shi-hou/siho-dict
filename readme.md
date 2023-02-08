@@ -19,13 +19,21 @@
     </a>
 </p>
 
-![img.png](img.png)
+![img.png](docs/img/img.png)
 
 ## 功能
 
 - 支持划词翻译、输入翻译
 - 支持有道词典、百度翻译和Moji辞書
 - 支持将单词添加到Anki
+
+## 快速开始
+
+```
+git clone git@github.com:shi-hou/siho-dict.git
+pip install -r requirements.txt
+python entry.py
+```
 
 ## 安装
 
@@ -47,3 +55,15 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;ass
 ### 将单词添加到Anki
 
 - 见Wiki，[Anki自动制卡](https://github.com/shi-hou/siho-dict/wiki/Anki%E8%87%AA%E5%8A%A8%E5%88%B6%E5%8D%A1)
+
+## TODO
+
+- 重置设置管理和设置界面
+- 悬浮图标翻译 
+- 词典顺序设置
+- 暗黑模式
+- 主题色设置
+- 输入框Suggest
+- 历史记录
+- 更多词典(必应词典、谷歌翻译...)
+- ...
