@@ -6,7 +6,7 @@ import winreg
 
 import langid
 import mouse
-import requestsp as requests
+import requestspr as requests
 from PyQt5.QtCore import QObject, pyqtSignal
 
 headers = {
