@@ -2,12 +2,14 @@ import json
 import os
 import shutil
 import sys
-import winreg
 
 import langid
 import mouse
 import requestspr as requests
+from py_auto_starter import auto_starter
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from core.update import TAG
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
@@ -61,34 +63,19 @@ class MouseEventManager(QObject):
         mouse.on_button(callback=self.signal.emit, buttons=buttons, types=types)
 
 
-REG_KEY_RUN = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Windows\CurrentVersion\Run',
-                             0, winreg.KEY_ALL_ACCESS)
-
-AUTO_RUN_NAME = 'SihoDict'
+AUTO_RUN_NAME = 'SihoDict-' + TAG
 
 
 def get_auto_run() -> bool:
-    try:
-        return winreg.QueryValueEx(REG_KEY_RUN, AUTO_RUN_NAME)[0] == get_app_exe_path()
-    except FileNotFoundError:
-        return False
-    except Exception as err:
-        print("获取开机自启设置异常", err)
-        return False
+    return auto_starter.exists(AUTO_RUN_NAME)
 
 
-def set_auto_run(new_value: bool) -> bool:
-    exe_path = get_app_exe_path()
-    try:
-        has_auto_run = get_auto_run()
-        if new_value and not has_auto_run:
-            winreg.SetValueEx(REG_KEY_RUN, AUTO_RUN_NAME, 0, winreg.REG_SZ, exe_path)
-        elif has_auto_run:
-            winreg.DeleteValue(REG_KEY_RUN, AUTO_RUN_NAME)
-        return True
-    except Exception as err:
-        print("修改开机自启设置异常", err)
-        return False
+def set_auto_run(new_value: bool):
+    if new_value:
+        app_path = get_app_exe_path()
+        auto_starter.add(AUTO_RUN_NAME, app_path)
+    else:
+        auto_starter.remove(AUTO_RUN_NAME)
 
 
 def get_config():
