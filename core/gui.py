@@ -205,7 +205,7 @@ class TransWindow(BaseWindow):
                 sleep(.01)
                 current_txt = pyperclip.paste()
                 pyperclip.copy(former_copy)  # 还原剪切版
-            # current_txt = current_txt.strip().replace('\n', ' ')
+            current_txt = current_txt.strip()
             if current_txt == '':  # 只显示title_bar
                 self.geometry.setHeight(BaseWindow.title_bar_height)
 
