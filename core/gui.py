@@ -1,11 +1,9 @@
 import re
+import sys
 import traceback
 import webbrowser
-from time import sleep
 
-import keyboard
 import mouse
-import pyperclip
 import requests
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
 from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent
@@ -38,7 +36,7 @@ class MainWindow(QMainWindow):
         def change_hotkey():
             if self.setting_window.hotkey_edit.isModified():
                 original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
-                new_hotkey = self.setting_window.hotkey_edit.text()
+                new_hotkey = self.setting_window.hotkey_edit.text().lower()
                 keybinder.unregister_hotkey(self.winId(), original_hotkey)
                 keybinder.register_hotkey(self.winId(), new_hotkey, self.trans_window.on_hotkey)
                 utils.update_config({'hotkey': new_hotkey})
@@ -197,14 +195,23 @@ class TransWindow(BaseWindow):
             if self.input_txt is not None:  # 来自输入框
                 current_txt = self.input_txt
             else:  # 来自划词
-                former_copy = pyperclip.paste()  # 用于还原剪切板
-                hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
-                for key in hotkey.split('+'):
-                    keyboard.release(key)
-                keyboard.send('ctrl+c')
-                sleep(.01)
-                current_txt = pyperclip.paste()
-                pyperclip.copy(former_copy)  # 还原剪切版
+                if sys.platform.startswith('win32'):
+                    import pyperclip
+                    import keyboard
+                    from time import sleep
+                    former_copy = pyperclip.paste()  # 用于还原剪切板
+                    hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
+                    for key in hotkey.split('+'):
+                        keyboard.release(key)
+                    keyboard.send('ctrl+c')
+                    sleep(.01)
+                    current_txt = pyperclip.paste()
+                    pyperclip.copy(former_copy)  # 还原剪切版
+                elif sys.platform.startswith('linux'):
+                    import os
+                    current_txt = os.popen('xsel').read()
+                else:
+                    raise Exception('暂不支持该系统')
             current_txt = current_txt.strip()
             if current_txt == '':  # 只显示title_bar
                 self.geometry.setHeight(BaseWindow.title_bar_height)
@@ -316,7 +323,7 @@ class SettingWindow(FramelessMainWindow):
                 model_name_config_key = f'anki-{dict_name}-model'
                 anki_deck_input = ILineEdit(config.get(deck_name_config_key, dict_name.title()))
                 anki_deck_input.editingFinished.connect(
-                        lambda: utils.update_config({deck_name_config_key: anki_deck_input.text()}))
+                    lambda: utils.update_config({deck_name_config_key: anki_deck_input.text()}))
                 anki_setting_group.addRow(f'{dict_title}牌组', anki_deck_input)
                 anki_model_input = ILineEdit(config.get(model_name_config_key, dict_name.title()))
                 anki_model_input.editingFinished.connect(

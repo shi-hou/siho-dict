@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 import os
 import sys
 import traceback
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     window = MainWindow()
     keybinder.init()
     unregistered = False
-    hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
+    hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
     keybinder.register_hotkey(window.winId(), hotkey, window.trans_window.on_hotkey)
     win_event_filter = WinEventFilter(keybinder)
     event_dispatcher = QAbstractEventDispatcher.instance()
