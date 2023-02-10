@@ -42,8 +42,14 @@ python entry.py
 或者自行将代码进行打包:
 
 ```
+# install and upgrade pip
 pip install pyinstaller --upgrade
+
+# on Windows: 
 pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
+
+# on Linux: 
+pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:assets" --clean -y -w -F -D "entry.py"
 ```
 
 ## 使用

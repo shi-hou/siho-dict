@@ -43,6 +43,7 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_DontCreateNativeWidgetSiblings)
 
     QApplication.setQuitOnLastWindowClosed(False)
+    sys.argv.append('--no-sandbox')
     app = QApplication(sys.argv)
     app.setStyleSheet(utils.read_asset_file('qss', 'global-style.qss'))
     for font_filename in os.listdir(utils.get_asset_path('fonts')):
