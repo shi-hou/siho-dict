@@ -5,14 +5,14 @@
 ---
 
 <p align="center">
-  基于PyQt5的Windows桌面划词翻译/查词工具
+  基于PyQt5的桌面划词翻译/查词工具
 </p>
 <p align="center">
     <a style="text-decoration:none" href="https://github.com/shi-hou/siho-dict/releases">
         <img src="https://img.shields.io/github/v/release/shi-hou/siho-dict?color=%23409EFF" alt="release">
     </a>
     <a style="text-decoration:none">
-        <img src="https://img.shields.io/badge/platform-windows-lightgrey" alt="platform: windows">
+        <img src="https://img.shields.io/badge/platform-windows%20|%20linux-lightgrey" alt="platform: windows">
     </a>
     <a style="text-decoration:none">
         <img src="https://img.shields.io/github/stars/shi-hou/siho-dict?style=social" alt="stars">
@@ -21,10 +21,11 @@
 
 ![img.png](docs/img/img.png)
 
-## 功能
+## Features
 
 - 支持划词翻译、输入翻译
-- 支持有道词典、百度翻译和Moji辞書
+- 支持Windows和Linux操作系统
+- 支持有道词典、百度翻译、金山词霸翻译和Moji辞書
 - 支持将单词添加到Anki
 
 ## 快速开始
@@ -52,6 +53,16 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;ass
 pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:assets" --clean -y -w -F -D "entry.py"
 ```
 
+**注意**: Linux需安装xsel (以CentOS7为例):
+
+```
+sudo yum -y install xsel
+
+# 若提示“没有可用软件包 xsel”，则先执行以下命令：
+sudo yum install epel-release
+yum update
+```
+
 ## 使用
 
 ### 翻译/查词
@@ -66,7 +77,7 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:ass
 ## TODO
 
 - 重置设置管理和设置界面
-- 悬浮图标翻译 
+- 悬浮图标翻译
 - 词典顺序设置
 - 暗黑模式
 - 主题色设置
@@ -76,6 +87,7 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:ass
 - ...
 
 ## LICENSE
+
 ```
 MIT License
 
