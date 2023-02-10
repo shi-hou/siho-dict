@@ -1,9 +1,7 @@
-import win32con
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QMouseEvent
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QLabel, QMainWindow
-from win32api import SendMessage
-from win32gui import ReleaseCapture
+from qframelesswindow.utils import startSystemMove
 
 from core import utils
 from core.widgets import IPage
@@ -59,13 +57,9 @@ class BaseWindow(QMainWindow):
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
 
-    def mousePressEvent(self, event):
-        if event.pos() not in self.title_bar.geometry():
-            return
-        ReleaseCapture()
-        SendMessage(self.window().winId(), win32con.WM_SYSCOMMAND,
-                    win32con.SC_MOVE + win32con.HTCAPTION, 0)
-        event.ignore()
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.pos() in self.title_bar.geometry():
+            startSystemMove(self, event.globalPos())
 
     def setPage(self, page: IPage):
         self.page = page
