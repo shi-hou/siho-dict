@@ -204,7 +204,7 @@ class TransWindow(BaseWindow):
                     for key in hotkey.split('+'):
                         keyboard.release(key)
                     keyboard.send('ctrl+c')
-                    sleep(.01)
+                    sleep(.1)
                     current_txt = pyperclip.paste()
                     pyperclip.copy(former_copy)  # 还原剪切版
                 elif sys.platform.startswith('linux'):
