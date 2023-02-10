@@ -138,9 +138,9 @@ def baidu_trans(text, _) -> dict:
     result_body = {
         'from_lang': from_lang,
         'type': resp_type,
-        'text': text
     }
     if resp_type == 1:
+        result_body['text'] = text
         result = json.loads(resp['result'])
         voice = result.get('voice')
         if voice is not None and from_lang == 'en':
@@ -183,12 +183,11 @@ def iciba_translate(text: str, _) -> dict:
 
 
 def moji_search(text, _) -> dict:
-    search_results = Moji.search_all(text, [Moji.DataType.Word]) \
-        .get('result').get('result').get('word').get('searchResult')
+    search_results = Moji.search_v3(text).get('result').get('searchResults')
     if len(search_results) == 0:
         return {}
-    target_id = search_results[0].get('targetId')
-    target_type = search_results[0].get('targetType')
+    target_id = search_results[0].get('tarId')
+    target_type = Moji.DataType.Word
     result = moji_fetch_word(target_id)
     word = result.get('word')
 
