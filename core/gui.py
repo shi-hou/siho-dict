@@ -6,7 +6,7 @@ import webbrowser
 import mouse
 import requests
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent, QClipboard
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
@@ -213,8 +213,9 @@ class TransWindow(BaseWindow):
                         current_txt = ''
                     pyperclip.copy(former_copy)  # 还原剪切版
                 elif sys.platform.startswith('linux'):
-                    import os
-                    current_txt = os.popen('xsel').read()
+                    clipboard = QApplication.clipboard()
+                    current_txt = clipboard.text(QClipboard.Selection)
+                    clipboard.setText('', QClipboard.Selection)
                 else:
                     raise Exception('暂不支持该系统')
             current_txt = current_txt.strip()

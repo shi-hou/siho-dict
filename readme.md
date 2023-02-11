@@ -24,7 +24,7 @@
 ## Features
 
 - 支持划词翻译、输入翻译
-- 支持Windows和Linux操作系统
+- 支持Windows和Linux(X11)操作系统
 - 支持有道词典、百度翻译、金山词霸翻译和Moji辞書
 - 支持将单词添加到Anki
 
@@ -51,16 +51,6 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;ass
 
 # on Linux: 
 pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:assets" --clean -y -w -F -D "entry.py"
-```
-
-**注意**: Linux需安装xsel (以CentOS7为例):
-
-```
-sudo yum -y install xsel
-
-# 若提示“没有可用软件包 xsel”，则先执行以下命令：
-sudo yum install epel-release
-yum update
 ```
 
 ## 使用
