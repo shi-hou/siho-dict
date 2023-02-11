@@ -4,10 +4,8 @@ import shutil
 import sys
 
 import langid
-import mouse
 import requestspr as requests
 from py_auto_starter import auto_starter
-from PyQt5.QtCore import QObject, pyqtSignal
 
 from core.update import TAG
 
@@ -41,26 +39,6 @@ def read_asset_file(*file_path: str) -> str:
         result_txt = f.read()
         f.close()
     return result_txt
-
-
-def addMouseEvent(parent, callback, mouse_btn=mouse.LEFT, btn_type=mouse.UP):
-    manager = MouseEventManager(parent, mouse_btn, btn_type)
-    manager.signal.connect(callback)
-    manager.start()
-
-
-class MouseEventManager(QObject):
-    signal = pyqtSignal()
-
-    def __init__(self, parent, mouse_btn, btn_type):
-        super().__init__(parent)
-        self.mouse_btn = mouse_btn
-        self.btn_type = btn_type
-
-    def start(self):
-        buttons = [self.mouse_btn]
-        types = [self.btn_type]
-        mouse.on_button(callback=self.signal.emit, buttons=buttons, types=types)
 
 
 AUTO_RUN_NAME = 'SihoDict-' + TAG

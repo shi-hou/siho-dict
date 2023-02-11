@@ -3,6 +3,7 @@ import sys
 import traceback
 import webbrowser
 
+import keyboard
 import mouse
 import requests
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
@@ -12,7 +13,6 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout, QLabel, QHBoxLayout, \
     QWidget
-from pyqtkeybind import keybinder
 from qframelesswindow import FramelessMainWindow
 
 from core import utils, update
@@ -35,10 +35,10 @@ class MainWindow(QMainWindow):
         @self.setting_window.hotkey_edit.editingFinished.connect
         def change_hotkey():
             if self.setting_window.hotkey_edit.isModified():
-                original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
+                original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
                 new_hotkey = self.setting_window.hotkey_edit.text().lower()
-                keybinder.unregister_hotkey(self.winId(), original_hotkey)
-                keybinder.register_hotkey(self.winId(), new_hotkey, self.trans_window.on_hotkey)
+                keyboard.remove_hotkey(original_hotkey)
+                keyboard.add_hotkey(new_hotkey, self.trans_window.on_hotkey, suppress=True)
                 utils.update_config({'hotkey': new_hotkey})
 
         @self.tray_icon.menu_open_trans_act.triggered.connect
@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
 
 
 class TransWindow(BaseWindow):
+    on_mouse_signal = pyqtSignal()
     show_signal = pyqtSignal(str, int, int)
     trans_signal = pyqtSignal(int, dict)
 
@@ -82,18 +83,18 @@ class TransWindow(BaseWindow):
         self.init()
 
     def init(self):
+        self.on_mouse_signal.connect(self.mouse_on_click)
         self.trans_signal.connect(self.show_trans_result)
         self.show_signal.connect(self.show_window)
 
-        self.setFixedWidth(370)
-        self.setFixedHeight(560)
+        self.setFixedSize(370, 560)
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
         self.setWindowFlag(Qt.Tool)
         self.content_widget.hide()
 
         self.close_btn.clicked.connect(self.hide)
 
-        utils.addMouseEvent(self, self.mouse_on_click, mouse_btn=mouse.LEFT, btn_type=mouse.DOWN)
+        mouse.on_button(self.on_mouse_signal.emit, types=mouse.DOWN)
 
         @self.input_edit.returnPressed.connect
         def input_return_pressed():
@@ -192,20 +193,24 @@ class TransWindow(BaseWindow):
             self.input_txt = input_txt
 
         def run(self) -> None:
-            if self.input_txt is not None:  # 来自输入框
+            if self.input_txt:  # 来自输入框
                 current_txt = self.input_txt
             else:  # 来自划词
                 if sys.platform.startswith('win32'):
                     import pyperclip
                     import keyboard
-                    from time import sleep
+                    from time import sleep, time
                     former_copy = pyperclip.paste()  # 用于还原剪切板
-                    hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z')
-                    for key in hotkey.split('+'):
-                        keyboard.release(key)
+                    timestamp = str(time())
+                    pyperclip.copy(timestamp)
+                    keyboard.release(utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
                     keyboard.send('ctrl+c')
                     sleep(.1)
                     current_txt = pyperclip.paste()
+                    # fix: 在桌面等无选择文本的情况下按下热键会对ctrl+c复制不到内容而对剪切板进行翻译
+                    if current_txt == timestamp:
+                        # ctrl+c没有复制到内容
+                        current_txt = ''
                     pyperclip.copy(former_copy)  # 还原剪切版
                 elif sys.platform.startswith('linux'):
                     import os
