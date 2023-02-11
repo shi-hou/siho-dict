@@ -19,7 +19,11 @@
     </a>
 </p>
 
-![img.png](docs/img/img.png)
+- On Windows11:
+![screenshot_on_windows11.png](docs/img/screenshot_on_windows11.png)
+- On CentOS7:
+![screenshot_on_centos7.png](docs/img/screenshot_on_centos7.png)
+
 
 ## Features
 
