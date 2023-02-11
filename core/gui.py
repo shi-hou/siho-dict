@@ -3,7 +3,6 @@ import sys
 import traceback
 import webbrowser
 
-import keyboard
 import mouse
 import requests
 from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
@@ -13,6 +12,7 @@ from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout, QLabel, QHBoxLayout, \
     QWidget
+from pyqtkeybind import keybinder
 from qframelesswindow import FramelessMainWindow
 
 from core import utils, update
@@ -37,8 +37,8 @@ class MainWindow(QMainWindow):
             if self.setting_window.hotkey_edit.isModified():
                 original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
                 new_hotkey = self.setting_window.hotkey_edit.text().lower()
-                keyboard.remove_hotkey(original_hotkey)
-                keyboard.add_hotkey(new_hotkey, self.trans_window.on_hotkey, suppress=True)
+                keybinder.unregister_hotkey(self.winId(), original_hotkey)
+                keybinder.register_hotkey(self.winId(), new_hotkey, self.trans_window.on_hotkey)
                 utils.update_config({'hotkey': new_hotkey})
 
         @self.tray_icon.menu_open_trans_act.triggered.connect

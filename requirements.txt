@@ -7,6 +7,7 @@ PyQt5==5.15.2
 PyQt5_Frameless_Window==0.2.1
 pyqt5Custom==1.0.1
 PyQt_Fluent_Widgets==0.2.3
+pyqtkeybind==0.0.9
 PyQtWebEngine==5.15.2
 requests==2.27.1
 requestspr==0.0.1

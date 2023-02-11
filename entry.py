@@ -4,14 +4,24 @@ import os
 import sys
 import traceback
 
-import keyboard
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, QAbstractEventDispatcher, QAbstractNativeEventFilter
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 from langid import langid
+from pyqtkeybind import keybinder
 
 from core import utils
 from core.gui import MainWindow
+
+
+class WinEventFilter(QAbstractNativeEventFilter):
+    def __init__(self, keybinder):
+        self.keybinder = keybinder
+        super().__init__()
+
+    def nativeEventFilter(self, eventType, message):
+        ret = self.keybinder.handler(eventType, message)
+        return ret, 0
 
 
 def except_hook(exc_type, exc_value, exc_tb):
@@ -42,11 +52,15 @@ if __name__ == '__main__':
         QtGui.QFontDatabase.addApplicationFont(utils.get_asset_path('fonts', font_filename))
 
     window = MainWindow()
+    keybinder.init()
     unregistered = False
     hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
-    keyboard.add_hotkey(hotkey, window.trans_window.on_hotkey, suppress=True)
+    keybinder.register_hotkey(window.winId(), hotkey, window.trans_window.on_hotkey)
+    win_event_filter = WinEventFilter(keybinder)
+    event_dispatcher = QAbstractEventDispatcher.instance()
+    event_dispatcher.installNativeEventFilter(win_event_filter)
 
     window.tray_icon.showMessage('启动成功', f'按下快捷键{hotkey}进行翻译', QSystemTrayIcon.MessageIcon.NoIcon, 5000)
 
     app.exec_()
-    keyboard.remove_hotkey(utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
+    keybinder.unregister_hotkey(window.winId(), utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
