@@ -123,7 +123,17 @@ def youdao_create_deck_and_model_if_not_exists() -> (str, str):
 
 
 # </editor-fold>
+'''====================================================谷歌翻译===================================================='''
 
+
+# <editor-fold desc="谷歌翻译">
+
+def google_trans(text, _) -> dict:
+    trans_text = Google.translate(text)
+    return {'trans': trans_text.replace('\n', '<br>')}
+
+
+# </editor-fold>
 
 '''====================================================百度翻译===================================================='''
 
@@ -167,10 +177,10 @@ def baidu_trans(text, _) -> dict:
 
 # <editor-fold desc="福昕翻译">
 
-def foxit_translate(text: str, from_lang: str) -> dict:
+def foxit_translate(text: str, _) -> dict:
     resp = Foxit.translate(text)
     result = resp.get('result')
-    return {'trans': result.replace('\n', '<br>').replace('\r', '<br>')}
+    return {'trans': result.replace('\n', '<br>')}
 
 
 # </editor-fold>
@@ -355,6 +365,15 @@ dict_list = [
         'style-file': 'youdao-panel.css',
         'anki-add-note': youdao_add_anki_note,  # 将单词添加到Anki, 接收查词结果, 返回添加结果信息字符串
         'anki-create-deck-and-model': youdao_create_deck_and_model_if_not_exists  # 创建Anki牌组和模板, 返回牌组名和模板名
+    },
+    {
+        'name': 'google-trans',
+        'able': True,
+        'title': '谷歌翻译',
+        'icon': 'google_translate_logo.webp',
+        'template': 'common-trans-panel.html',
+        'style-file': 'common-trans-panel.css',
+        'func': google_trans,
     },
     {
         'name': 'baidu',
