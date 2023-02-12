@@ -206,7 +206,7 @@ class TransWindow(BaseWindow):
                     keyboard.release(utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
                     keyboard.send('ctrl+c')
                     sleep(.1)
-                    current_txt = pyperclip.paste()
+                    current_txt = pyperclip.paste().replace('\r\n', '\n')
                     # fix: 在桌面等无选择文本的情况下按下热键会对ctrl+c复制不到内容而对剪切板进行翻译
                     if current_txt == timestamp:
                         # ctrl+c没有复制到内容
@@ -219,6 +219,11 @@ class TransWindow(BaseWindow):
                 else:
                     raise Exception('暂不支持该系统')
             current_txt = current_txt.strip()
+            # 去除连字符分割换行
+            current_txt = re.sub('[A-Za-z]-[\n|\r][A-Za-z]', lambda x: x.group(0)[0] + x.group(0)[-1], current_txt)
+            # 将非句子结尾处的换行改成空格
+            current_txt = re.sub('[^.|?|!|)|。|？|！|）]\s*[\n|\r]\S', lambda x: x.group(0)[0] + ' ' + x.group(0)[-1],
+                                 current_txt)
             if current_txt == '':  # 只显示title_bar
                 self.geometry.setHeight(BaseWindow.title_bar_height)
 

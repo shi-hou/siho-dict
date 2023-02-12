@@ -184,7 +184,7 @@ def foxit_translate(text: str, from_lang: str) -> dict:
 def iciba_translate(text: str, _) -> dict:
     resp = Iciba.translate(text)
     out = resp.get('content').get('out')
-    return {'trans': out.replace('\n', '<br>').replace('\r', '<br>')}
+    return {'trans': out.replace('\n', '<br>')}
 
 
 # </editor-fold>
