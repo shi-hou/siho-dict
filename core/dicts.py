@@ -3,7 +3,7 @@ import os
 
 import requests
 from retry import retry
-from sihodictapi import Youdao, Baidu, Iciba, Moji
+from sihodictapi import *
 
 from core import utils
 from core.anki import Anki
@@ -18,7 +18,7 @@ def youdao_search(q: str, _):
     result_body = {}
     fanyi = resp_json.get('fanyi')
     if fanyi:  # 输入为句子, 机器翻译
-        result_body['trans_html'] = fanyi.get('tran')
+        result_body['trans_html'] = fanyi.get('tran').replace('\n', '<br>')
         return result_body
 
     ec = resp_json.get('ec')
@@ -162,6 +162,20 @@ def baidu_trans(text, _) -> dict:
 # </editor-fold>
 
 
+'''====================================================福昕翻译===================================================='''
+
+
+# <editor-fold desc="福昕翻译">
+
+def foxit_translate(text: str, from_lang: str) -> dict:
+    resp = Foxit.translate(text)
+    result = resp.get('result')
+    return {'trans': result.replace('\n', '<br>').replace('\r', '<br>')}
+
+
+# </editor-fold>
+
+
 '''====================================================金山词霸翻译===================================================='''
 
 
@@ -170,7 +184,28 @@ def baidu_trans(text, _) -> dict:
 def iciba_translate(text: str, _) -> dict:
     resp = Iciba.translate(text)
     out = resp.get('content').get('out')
-    return {'out': out.replace('\n', '<br>').replace('\r', '<br>')}
+    return {'trans': out.replace('\n', '<br>').replace('\r', '<br>')}
+
+
+# </editor-fold>
+
+
+'''====================================================沪江小D翻译===================================================='''
+
+
+# <editor-fold desc="金山词霸翻译">
+
+def hjenglish_translate(text: str, from_lang: str) -> dict:
+    if from_lang == 'zh':
+        from_lang = Hujiang.Lang.CN
+    elif from_lang == 'ja':
+        from_lang = Hujiang.Lang.JP
+    elif from_lang == 'ko':
+        from_lang = Hujiang.Lang.KR
+
+    resp = Hujiang.translate(text, from_lang, Hujiang.Lang.CN)
+    content = resp.get('data').get('content')
+    return {'trans': content.replace('\r\n', '<br>')}
 
 
 # </editor-fold>
@@ -232,7 +267,7 @@ def moji_search(text, _) -> dict:
         'sound': {
             'type': 'audio',
             'filename': f'moji_{target_id}.mp3',
-            'url': Moji.tts_fetch(target_id, target_type).get('result').get('result').get('url')
+            'url': moji_tts_url(target_id, target_type)
         },
         'link': Moji.data_url(target_id, target_type),
         'part_of_speech': " ".join(parts_of_speech.values()),
@@ -244,6 +279,11 @@ def moji_search(text, _) -> dict:
 @retry(tries=3)
 def moji_fetch_word(word_id: str) -> dict:
     return Moji.fetch_words(word_id).get('result').get('result')[0]
+
+
+@retry(tries=3)
+def moji_tts_url(target_id, target_type) -> str:
+    return Moji.tts_fetch(target_id, target_type).get('result').get('result').get('url')
 
 
 def moji_add_anki_note(data: dict) -> str:
@@ -326,13 +366,31 @@ dict_list = [
         'style-file': 'baidu-panel.css',
     },
     {
+        'name': 'foxit-trans',
+        'able': True,
+        'title': '福昕翻译',
+        'icon': 'foxit_logo.png',
+        'template': 'common-trans-panel.html',
+        'style-file': 'common-trans-panel.css',
+        'func': foxit_translate,
+    },
+    {
         'name': 'iciba-trans',
         'able': True,
         'title': '金山词霸翻译',
         'icon': 'iciba-logo.png',
-        'template': 'iciba-trans-panel.html',
-        'style-file': 'iciba-panel.css',
+        'template': 'common-trans-panel.html',
+        'style-file': 'common-trans-panel.css',
         'func': iciba_translate,
+    },
+    {
+        'name': 'hjenglish-trans',
+        'able': True,
+        'title': '沪江小D翻译',
+        'icon': 'hjenglish_logo.webp',
+        'template': 'common-trans-panel.html',
+        'style-file': 'common-trans-panel.css',
+        'func': hjenglish_translate,
     },
     {
         'name': 'moji',

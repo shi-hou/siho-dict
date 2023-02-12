@@ -4,22 +4,20 @@ import shutil
 import sys
 
 import langid
-import requestspr as requests
+from requestspr import Requests
 from py_auto_starter import auto_starter
 
 from core.update import TAG
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-}
+requests = Requests()
 
 
-def request_get(url, params=None):
-    return requests.get(url, params, headers=headers, timeout=(5, 5))
+def request_get(url, params=None, **kwargs):
+    return requests.get(url, params, **kwargs)
 
 
-def request_post(url, data=None, json=None):
-    return requests.post(url, data, json, headers=headers, timeout=(5, 5))
+def request_post(url, data=None, json=None, **kwargs):
+    return requests.post(url, data, json, **kwargs)
 
 
 def get_app_dir_path():
