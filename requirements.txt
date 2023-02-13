@@ -12,4 +12,4 @@ PyQtWebEngine==5.15.2
 requests==2.27.1
 requestspr==0.0.3
 retry==0.9.2
-sihodictapi==0.1.13
+sihodictapi==0.1.16

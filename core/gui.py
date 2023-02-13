@@ -17,6 +17,7 @@ from qframelesswindow import FramelessMainWindow
 
 from core import utils, update
 from core.dicts import Dict, dicts
+from core.languages import Lang
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, IToast
 
 
@@ -68,7 +69,6 @@ class MainWindow(QMainWindow):
 class TransWindow(BaseWindow):
     on_mouse_signal = pyqtSignal()
     show_signal = pyqtSignal(str, int, int)
-    trans_signal = pyqtSignal(int, dict)
 
     def __init__(self):
         self.input_edit = QLineEdit()
@@ -76,7 +76,7 @@ class TransWindow(BaseWindow):
         self.fix_btn = self.addTitleBarButton(icon=utils.get_asset_path('icon', '固定_line.svg'))
         self.result_list_widget = ResultViewListWidget()
         self.thread_pool = QThreadPool(self)
-        self.thread_pool.setMaxThreadCount(4)
+        self.thread_pool.setMaxThreadCount(1)
         self.window_show_worker = None
         self.trans_loaders = []
         self.fix_not_hidden = False
@@ -84,7 +84,6 @@ class TransWindow(BaseWindow):
 
     def init(self):
         self.on_mouse_signal.connect(self.mouse_on_click)
-        self.trans_signal.connect(self.show_trans_result)
         self.show_signal.connect(self.show_window)
 
         self.setFixedSize(370, 560)
@@ -143,17 +142,12 @@ class TransWindow(BaseWindow):
         if has_content:
             self.result_list_widget.loading()
             self.trans_loaders = []
-            for i in range(len(dicts.on_dict)):
-                trans_loader = self.TransLoader(i, self.trans_signal, input_text)
-                self.trans_loaders.append(trans_loader)
-                self.thread_pool.start(trans_loader)
+            lang = utils.check_language(input_text)
+            for trans_widget in self.result_list_widget.widget_list:
+                trans_widget.do_trans(input_text, lang)
         else:
             self.activateWindow()
             self.input_edit.setFocus()
-
-    @pyqtSlot(int, dict)
-    def show_trans_result(self, index, result_dict):
-        self.result_list_widget.widget_list[index].setResult(result_dict)
 
     def on_hotkey(self):
         self.stopLoad()
@@ -180,10 +174,8 @@ class TransWindow(BaseWindow):
             QIcon(QPixmap(utils.get_asset_path('icon', '固定_fill.svg' if value else '固定_line.svg'))))
 
     def stopLoad(self):
-        for loader in self.trans_loaders:
-            loader.stop()
-        self.trans_loaders = []
-        self.thread_pool.clear()
+        for trans_widget in self.result_list_widget.widget_list:
+            trans_widget.stop_trans()
 
     class WindowShowWorker(QRunnable):
         def __init__(self, show_signal, geometry: QRect, input_txt=None):
@@ -235,32 +227,6 @@ class TransWindow(BaseWindow):
             show_y = max(0, min(self.geometry.y(), desktop_geometry.height() - self.geometry.height()))
 
             self.show_signal.emit(current_txt, show_x, show_y)
-
-    class TransLoader(QRunnable):
-
-        def __init__(self, index, trans_signal, text: str):
-            super().__init__()
-            self.index = index
-            self.trans_signal = trans_signal
-            self.text = text
-            self.is_running = True
-
-        def run(self):
-            retries = 3
-            from_lang = utils.check_language(self.text)
-            for i in range(retries):
-                if not self.is_running:
-                    return
-                try:
-                    result = dicts.on_dict[self.index].do_trans(self.text, from_lang)
-                    self.trans_signal.emit(self.index, result)
-                    return
-                except Exception:
-                    traceback.print_exc()
-            self.trans_signal.emit(self.index, Dict.message_result('翻译出现异常'))
-
-        def stop(self):
-            self.is_running = False
 
 
 class SettingWindow(FramelessMainWindow):
@@ -459,11 +425,17 @@ class ResultViewListWidget(QWidget):
 
 
 class ResultViewWidget(QWidget):
+    trans_signal = pyqtSignal(dict)
+
     def __init__(self, dictionary: Dict):
         super().__init__()
         self.dictionary = dictionary
         self.layout = QVBoxLayout()
         self.trans_result_view = ResultView(dictionary, self)
+        self.thread_pool = QThreadPool()
+        self.thread_pool.setMaxThreadCount(1)
+        self.trans_signal.connect(self.setResult)
+        self.trans_loader = None
         self.init()
 
     def init(self):
@@ -489,6 +461,15 @@ class ResultViewWidget(QWidget):
         self.layout.addStretch(1)
         self.setLayout(self.layout)
 
+    def do_trans(self, text: str, from_lang: Lang):
+        self.trans_loader = self.TransLoader(self.dictionary, self.trans_signal, text, from_lang)
+        self.thread_pool.start(self.trans_loader)
+
+    def stop_trans(self):
+        if self.trans_loader:
+            self.trans_loader.stop()
+
+    @pyqtSlot(dict)
     def setResult(self, result_dict: dict):
         if not result_dict:
             self.trans_result_view.setMessage('查无内容')
@@ -502,6 +483,32 @@ class ResultViewWidget(QWidget):
 
     def clear(self):
         self.trans_result_view.setMessage('')
+
+    class TransLoader(QRunnable):
+
+        def __init__(self, dictionary, trans_signal, text: str, from_lang: Lang):
+            super().__init__()
+            self.dictionary = dictionary
+            self.trans_signal = trans_signal
+            self.text = text
+            self.from_lang = from_lang
+            self.is_running = True
+
+        def run(self):
+            retries = 3
+            for i in range(retries):
+                if not self.is_running:
+                    return
+                try:
+                    result = self.dictionary.do_trans(self.text, self.from_lang)
+                    self.trans_signal.emit(result)
+                    return
+                except Exception:
+                    traceback.print_exc()
+            self.trans_signal.emit(Dict.message_result('翻译出现异常'))
+
+        def stop(self):
+            self.is_running = False
 
 
 class ResultView(QWebEngineView):
