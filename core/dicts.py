@@ -506,7 +506,6 @@ dict_list = [
         'name': 'moji',
         'able': True,
         'title': 'MOJi辞書',
-        'support-lang': [Lang.ZH, Lang.JA],
         'icon': 'moji-dict-logo.png',
         'audio-icon': 'moji-voice.webp',
         'template': 'moji-panel.html',
