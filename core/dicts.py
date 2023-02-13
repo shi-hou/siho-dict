@@ -369,7 +369,7 @@ def moji_search(text, _) -> dict:
 
 @retry(tries=3)
 def moji_fetch_word(word_id: str) -> dict:
-    return Moji.fetch_words(word_id).get('result').get('result')[0]
+    return Moji.fetch_word(word_id).get('result').get('result')[0]
 
 
 @retry(tries=3)
@@ -505,7 +505,7 @@ dict_list = [
     {
         'name': 'moji',
         'able': True,
-        'title': 'Moji辞書',
+        'title': 'MOJi辞書',
         'support-lang': [Lang.ZH, Lang.JA],
         'icon': 'moji-dict-logo.png',
         'audio-icon': 'moji-voice.webp',
