@@ -350,7 +350,7 @@ def moji_search(text, _) -> dict:
         'support-anki': True,
         'title': search_results[0].get('title'),
         'target_id': target_id,
-        'target_type': str(target_type),
+        'target_type': str(target_type.value),
         'spell': word.get('spell'),
         'accent': word.get('accent', ''),
         'pron': word.get('pron', ''),
