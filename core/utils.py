@@ -7,6 +7,7 @@ import langid
 from requestspr import Requests
 from py_auto_starter import auto_starter
 
+from core.languages import Lang
 from core.update import TAG
 
 requests = Requests()
@@ -74,8 +75,8 @@ def update_config(config: dict):
         json.dump(origin, f, sort_keys=True, indent=2)
 
 
-def check_language(string: str) -> str:
-    return langid.classify(string)[0]
+def check_language(string: str) -> Lang:
+    return Lang(langid.classify(string)[0])
 
 
 def store_tmp_file(filename: str, url: str) -> str:

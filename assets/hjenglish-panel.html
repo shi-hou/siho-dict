@@ -1,0 +1,30 @@
+<div class="buttons">{{buttons-html}}</div>
+<div class="words">{{words-html}}</div>
+<script>
+    const buttons = document.getElementsByClassName('select-button')
+    const words = document.getElementsByClassName('word');
+    if (buttons.length === 1) {
+        document.getElementsByClassName('buttons')[0].style.display = 'none'
+    }
+    for (let i = 0; i < words.length; i++) {
+        if (i === 0) {
+            words[i].style.display = '';
+            buttons[i].setAttribute('selected', 'true');
+        } else {
+            words[i].style.display = 'none';
+            buttons[i].setAttribute('selected', 'false');
+        }
+    }
+    select_word = index => {
+        index = Number(index);
+        for (let i = 0; i < words.length; i++) {
+            if (i === index) {
+                words[i].style.display = '';
+                buttons[i].setAttribute('selected', 'true');
+            } else {
+                words[i].style.display = 'none';
+                buttons[i].setAttribute('selected', 'false');
+            }
+        }
+    }
+</script>

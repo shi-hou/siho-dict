@@ -12,6 +12,7 @@ from pyqtkeybind import keybinder
 
 from core import utils
 from core.gui import MainWindow
+from core.languages import ALL_LANG
 
 
 class WinEventFilter(QAbstractNativeEventFilter):
@@ -33,8 +34,8 @@ def except_hook(exc_type, exc_value, exc_tb):
 if __name__ == '__main__':
     sys.excepthook = except_hook
 
-    # 加载langid, Fix: 第一次翻译卡顿问题
-    langid.load_model()
+    # 加载langid(防止第一次翻译卡顿问题)并设置支持的语言列表
+    langid.set_languages(ALL_LANG)
 
     # os.environ['QTWEBENGINE_REMOTE_DEBUGGING'] = '9966'  # 打开QWebEngineView调试控制台 http://localhost:9966
 

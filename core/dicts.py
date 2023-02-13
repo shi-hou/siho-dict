@@ -7,6 +7,7 @@ from sihodictapi import *
 
 from core import utils
 from core.anki import Anki
+from core.languages import ALL_LANG, Lang
 
 '''====================================================有道词典===================================================='''
 
@@ -203,19 +204,99 @@ def iciba_translate(text: str, _) -> dict:
 '''====================================================沪江小D翻译===================================================='''
 
 
-# <editor-fold desc="金山词霸翻译">
+# <editor-fold desc="沪江小D翻译">
 
-def hjenglish_translate(text: str, from_lang: str) -> dict:
-    if from_lang == 'zh':
+def hjenglish_translate(text: str, from_lang: Lang) -> dict:
+    if from_lang is Lang.ZH:
         from_lang = Hujiang.Lang.CN
-    elif from_lang == 'ja':
+    elif from_lang is Lang.JA:
         from_lang = Hujiang.Lang.JP
-    elif from_lang == 'ko':
-        from_lang = Hujiang.Lang.KR
 
     resp = Hujiang.translate(text, from_lang, Hujiang.Lang.CN)
     content = resp.get('data').get('content')
     return {'trans': content.replace('\r\n', '<br>')}
+
+
+# </editor-fold>
+
+
+'''====================================================沪江小D查词-日语===================================================='''
+
+
+# <editor-fold desc="沪江小D查词-日语">
+
+def hjenglish_dict_search_jp(text: str, _) -> dict:
+    results = Hujiang.dict_search_jp(text).get('results')
+    type = 'jc'
+    if not results:
+        results = Hujiang.dict_search_jp(text, 'cj').get('results')
+        type = 'cj'
+    if not results:
+        return {}
+    button_html_list = []
+    word_html_list = []
+    for index, result in enumerate(results):
+        word_text = result.get('word_text')
+        word_info = result.get('word_info')
+        spell = word_info.get('spell')
+        if spell:
+            spell = f'[{spell}]'
+        # audio = word_info.get('audio')    # TODO
+        accent = word_info.get('accent', '')
+        button_html_list.append(f'<a class="select-button" onclick="select_word({index})">'
+                                f'<span class="button-word">{word_text}</span>'
+                                f'<span class="button-spell">{spell}</span>'
+                                f'</a>')
+        simple_html = ''
+        for simple in result.get('simple'):
+            title = simple.get('title')
+            if title:
+                title = f'【{title}】'
+            paraphrases = simple.get('paraphrases')
+            if type == 'jc':
+                simple_paraphrases_html = f'<ol><li>{"</li><li>".join(paraphrases)}</li></ol>'
+            else:
+                simple_paraphrases_html = f'{"；".join(paraphrases)}'
+            simple_html += f'<div class="simple-title">{title}</div>' \
+                           f'<div class="simple-definition">{simple_paraphrases_html}</div>'
+        detail_html_list = []
+        for detail in result.get('details'):
+            category = detail.get('category')
+            paraphrases_html = ''
+            for paraphrase in detail.get('paraphrases'):
+                paraphrase_ja = paraphrase.get('paraphrase_ja')
+                paraphrase_zh = paraphrase.get('paraphrase_zh')
+                examples_html = ''
+                for example in paraphrase.get('examples'):
+                    examples_html += f'<div class="example">{example.get("example", "")}</div>' \
+                                     f'<div class="trans">{example.get("trans", "")}</div>'
+                paraphrases_html += '<li>' \
+                                    f'<div class="paraphrase-ja">{paraphrase_ja}</div>' \
+                                    f'<div class="paraphrase-zh">{paraphrase_zh}</div>' \
+                                    f'<div class="examples">{examples_html}</div>' \
+                                    '</li>'
+            detail_html = '<div class="detail">' \
+                          f'<div class="category">{category}</div>' \
+                          f'<div class="paraphrases"><ol>{paraphrases_html}</ol></div>' \
+                          '</div>'
+            detail_html_list.append(detail_html)
+        details_html = '\n'.join(detail_html_list)
+        word_html = '<div class="word">' \
+                    '<div class="word-header">' \
+                    '<div class="word-info">' \
+                    f'<div class="word-text">{word_text}</div>' \
+                    f'<div class="pronounces">{spell}<span class="accent">{accent}</span></div>' \
+                    '</div>' \
+                    '' \
+                    f'<div class="sample">{simple_html}</div>' \
+                    '</div>' \
+                    f'<div class="word-details">{details_html}</div>' \
+                    '</div>'
+        word_html_list.append(word_html)
+    return {
+        'buttons-html': '\n'.join(button_html_list),
+        'words-html': '\n'.join(word_html_list)
+    }
 
 
 # </editor-fold>
@@ -357,7 +438,7 @@ dict_list = [
         'name': 'youdao',
         'able': True,
         'title': '有道词典',
-        'exclude_lang': ['ja'],  # 不翻译的语言, 'zh':中文, 'en': 英文, 'ja': 日文
+        'support-lang': [Lang.ZH, Lang.EN],  # 支持翻译的语言, 见core.languages.Lang枚举, 默认为Lang的所有枚举值
         'icon': 'youdao-logo.png',
         'audio-icon': 'youdao-voice.png',
         'template': 'youdao-panel.html',
@@ -412,10 +493,20 @@ dict_list = [
         'func': hjenglish_translate,
     },
     {
+        'name': 'hjenglish-dict-jp',
+        'able': True,
+        'title': '沪江小D日语词典',
+        'support-lang': [Lang.ZH, Lang.JA],
+        'icon': 'hjenglish_logo.webp',
+        'template': 'hjenglish-panel.html',
+        'style-file': 'hjenglish-dict-panel.css',
+        'func': hjenglish_dict_search_jp,
+    },
+    {
         'name': 'moji',
         'able': True,
         'title': 'Moji辞書',
-        'exclude_lang': ['en'],
+        'support-lang': [Lang.ZH, Lang.JA],
         'icon': 'moji-dict-logo.png',
         'audio-icon': 'moji-voice.webp',
         'template': 'moji-panel.html',
@@ -446,7 +537,7 @@ class Dicts:
             able = d.get('able', False)
             on = able and self.dict_settings.get(name, {}).get("on", False)
             title = d.get('title')
-            exclude_lang = d.get('exclude_lang', [])
+            support_lang = d.get('support-lang', ALL_LANG)  # 默认支持所有语言
             icon = d.get('icon')
             audio_icon = d.get('audio-icon')
             template = d.get('template')
@@ -454,7 +545,7 @@ class Dicts:
             style_file = d.get('style-file', None)
             anki_add_note_func = d.get('anki-add-note', None)
             anki_create_deck_and_model_func = d.get('anki-create-deck-and-model', None)
-            dictionary = Dict(name, able, on, title, exclude_lang, icon, audio_icon, template, func, style_file,
+            dictionary = Dict(name, able, on, title, support_lang, icon, audio_icon, template, func, style_file,
                               anki_add_note_func, anki_create_deck_and_model_func)
             self.all_dict.append(dictionary)
             if on:
@@ -470,14 +561,14 @@ class Dicts:
 
 
 class Dict:
-    def __init__(self, name: str, able: bool, on: bool, title: str, exclude_lang: list, icon: str,
+    def __init__(self, name: str, able: bool, on: bool, title: str, support_lang: list, icon: str,
                  audio_icon: str = None, template: str = None, func=None, style_file: str = None,
                  anki_add_note_func=None, anki_create_deck_and_model=None):
         self.name = name
         self.able = able
         self.on = on
         self.title = title
-        self.exclude_lang = exclude_lang
+        self.support_lang = support_lang
         self.icon = icon
         self.audio_icon = audio_icon
         self.template = template
@@ -493,7 +584,7 @@ class Dict:
     def do_trans(self, text, from_lang) -> dict:
         if not self.able or self.func is None:
             return self.message_result('该词典暂不可用')
-        if from_lang in self.exclude_lang:
+        if from_lang not in self.support_lang:
             return self.message_result('该词典不支持该语言')
 
         return self.func(text, from_lang)
