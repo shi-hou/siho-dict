@@ -4,7 +4,7 @@ from core import utils
 
 OWNER = 'shi-hou'
 REPO = 'siho-dict'
-TAG = 'v0.2.5'
+TAG = 'v0.2.6'
 GITHUB_URL = f'https://github.com/{OWNER}/{REPO}'
 
 
