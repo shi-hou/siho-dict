@@ -419,6 +419,7 @@ class ResultViewListWidget(QWidget):
         """
         for widget in self.widget_list:
             self.layout.removeWidget(widget)
+            widget.deleteLater()
         self.widget_list = []
         for index, d in enumerate(dicts.on_dict):
             widget = ResultViewWidget(d)
