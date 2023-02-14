@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import traceback
@@ -5,13 +6,14 @@ import webbrowser
 
 import mouse
 import requests
-from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent, QClipboard
+from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl, QPropertyAnimation, \
+    QSize, QEasingCurve, pyqtProperty
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent, QClipboard, QShowEvent, QHideEvent
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
 from PyQt5.QtWidgets import QLineEdit, QSystemTrayIcon, QMainWindow, QApplication, QVBoxLayout, QLabel, QHBoxLayout, \
-    QWidget
+    QWidget, QPushButton, QLayout
 from pyqtkeybind import keybinder
 from qframelesswindow import FramelessMainWindow
 
@@ -429,6 +431,8 @@ class ResultViewWidget(QWidget):
 
     def __init__(self, dictionary: Dict):
         super().__init__()
+        self.title_widget = QWidget()
+        self.fold_btn = QPushButton(QIcon(utils.get_asset_path('icon', 'left-outlined.svg')), '')
         self.dictionary = dictionary
         self.layout = QVBoxLayout()
         self.trans_result_view = ResultView(dictionary, self)
@@ -441,6 +445,8 @@ class ResultViewWidget(QWidget):
     def init(self):
         self.setAttribute(Qt.WA_StyledBackground)
 
+        self.trans_result_view.hide()
+
         title_layout = QHBoxLayout()
 
         icon_label = QLabel()
@@ -449,16 +455,28 @@ class ResultViewWidget(QWidget):
         icon = utils.get_asset_path('icon', self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
         icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 3px;')
         title_layout.addWidget(icon_label)
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        self.title_widget.setLayout(title_layout)
 
         title_label = QLabel(self.dictionary.title)
         title_label.setProperty('class', 'title-label')
         title_layout.addWidget(title_label)
 
         title_layout.addStretch(1)
-        self.layout.addLayout(title_layout)
+
+        @self.fold_btn.clicked.connect
+        def fold_btn_on_click():
+            self.setFolded(not self.trans_result_view.isHidden())
+
+        self.fold_btn.setEnabled(False)
+        self.fold_btn.setProperty('class', 'panel-fold-btn')
+        title_layout.addWidget(self.fold_btn)
+        self.layout.addWidget(self.title_widget)
 
         self.layout.addWidget(self.trans_result_view)
+        self.layout.setSpacing(0)
         self.layout.addStretch(1)
+        self.layout.setSizeConstraint(QLayout.SetNoConstraint)
         self.setLayout(self.layout)
 
     def do_trans(self, text: str, from_lang: Lang):
@@ -477,11 +495,23 @@ class ResultViewWidget(QWidget):
             self.trans_result_view.setMessage(result_dict.get('message'))
         else:
             self.trans_result_view.setResult(result_dict)
+        self.fold_btn.setEnabled(True)
+        self.setFolded(False)
+
+    def setFolded(self, isFolded):
+        if isFolded:
+            self.fold_btn.setIcon(QIcon(utils.get_asset_path('icon', 'left-outlined.svg')))
+        else:
+            self.fold_btn.setIcon(QIcon(utils.get_asset_path('icon', 'down-outlined.svg')))
+        self.trans_result_view.setHidden(isFolded)
 
     def loading(self):
-        self.trans_result_view.setMessage('加载中...')
+        self.fold_btn.setEnabled(False)
+        self.trans_result_view.hide()
+        # self.trans_result_view.setMessage('加载中...')
 
     def clear(self):
+        self.fold_btn.setEnabled(False)
         self.trans_result_view.setMessage('')
 
     class TransLoader(QRunnable):

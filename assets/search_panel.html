@@ -35,7 +35,7 @@
                 // 监听网页高度，使webview和网页等高，使网页内部无法滚动
                 new ResizeObserver((entries) => {
                         const height = entries[0].contentRect.height
-                        if (height > 0)
+                        if (height >= 0)
                             Bridge.setHeight(height)
                     }
                 ).observe(panelDiv);
