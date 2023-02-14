@@ -64,6 +64,10 @@ class Anki:
         })
 
     @classmethod
+    def find_notes(cls, **query):
+        return cls.invoke("findNotes", query=' '.join([f'{key}:{value}' for key, value in query.items()]))
+
+    @classmethod
     def store_media_file(cls, filename: str, path: str):
         return cls.invoke("storeMediaFile", filename=filename, path=path)
 

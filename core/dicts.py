@@ -382,7 +382,7 @@ def moji_add_anki_note(data: dict) -> str:
 
     fields = data.copy()
     fields['sound'] = ''
-    if not Anki.can_add_note(deck_name, model_name, fields):
+    if Anki.find_notes(deck=deck_name, target_id=data.get('target_id')):
         return '单词已存在, 无需重复添加'
 
     audio = []
