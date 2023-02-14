@@ -45,18 +45,7 @@ python entry.py
 
 前往 [release](https://github.com/shi-hou/siho-dict/releases) 下载最新版本的程序压缩包，解压运行siho-dict.exe即可。
 
-或者自行将代码进行打包:
-
-```
-# install and upgrade pip
-pip install pyinstaller --upgrade
-
-# on Windows: 
-pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets;assets" --clean -y -w -F -D "entry.py"
-
-# on Linux: 
-pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:assets" --clean -y -w -F -D "entry.py"
-```
+或运行`package.py`对代码进行打包。
 
 ## 使用
 
@@ -78,7 +67,8 @@ pyinstaller -i "assets\icon\logo-icon.ico" -n "siho-dict" --add-data "assets:ass
 - 主题色设置
 - 输入框Suggest
 - 历史记录
-- 更多词典(必应词典、谷歌翻译...)
+- 更多词典
+- 国际化
 - ...
 
 ## LICENSE
