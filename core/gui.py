@@ -466,7 +466,6 @@ class ResultViewWidget(QWidget):
         def back_btn_on_click():
             self.trans_result_view.history_list.pop()
             word = self.trans_result_view.history_list[-1]
-            print('←', word, self.trans_result_view.history_list)
             self.back_btn.setEnabled(len(self.trans_result_view.history_list) > 1)
             self.do_trans(word, Lang.AUTO, False)
 
@@ -594,6 +593,13 @@ class ResultView(QWebEngineView):
         url = unquote(link)
         if url.startswith('entry://'):
             text = url[len('entry://'):]
+            # TODO 支持锚点
+            if '#' in url:
+                anchor_index = text.rindex('#')
+                anchor = text[anchor_index + 1:]
+                text = text[:anchor_index]
+            else:
+                anchor = ''
             self.do_trans(text, Lang.AUTO, False)
             return False
         elif url.startswith('sound://'):
@@ -628,7 +634,6 @@ class ResultView(QWebEngineView):
             self.nativeParentWidget().page.verticalScrollBar().setValue(self.widget.y() - 10)
         if text and (not self.history_list or text != self.history_list[-1]):
             self.history_list.append(text)
-        print('history:', self.history_list)
         self.widget.back_btn.setEnabled(len(self.history_list) > 1)
         self.trans_loader = self.TransLoader(self.dictionary, self.trans_signal, text, from_lang)
         self.trans_thread_pool.start(self.trans_loader)
