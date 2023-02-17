@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # 加载langid(防止第一次翻译卡顿问题)并设置支持的语言列表
     langid.set_languages(ALL_LANG)
 
-    # os.environ['QTWEBENGINE_REMOTE_DEBUGGING'] = '9966'  # 打开QWebEngineView调试控制台 http://localhost:9966
+    os.environ['QTWEBENGINE_REMOTE_DEBUGGING'] = '9966'  # 打开QWebEngineView调试控制台 http://localhost:9966
 
     # enable dpi scale
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)

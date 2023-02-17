@@ -1,13 +1,17 @@
 import json
 import os
+import re
+from urllib.parse import quote
 
 import requests
+from bs4 import BeautifulSoup
 from retry import retry
 from sihodictapi import *
 
 from core import utils
 from core.anki import Anki
 from core.languages import ALL_LANG, Lang
+from mdict_query import IndexBuilder
 
 '''====================================================有道词典===================================================='''
 
@@ -431,6 +435,23 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
 # </editor-fold>
 
 
+'''=========================================超級クラウン中日辞典/クラウン日中辞典========================================='''
+
+
+# <editor-fold desc="超級クラウン中日辞典/クラウン日中辞典">
+
+def crown_dict_search(text: str, _) -> dict:
+    cj_html_list, jc_html_list = Crown.dict_search(text)
+    if not (cj_html_list or jc_html_list):
+        return {}
+    return {
+        'cj': '\n'.join(cj_html_list),
+        'jc': '\n'.join(jc_html_list)
+    }
+
+
+# </editor-fold>
+
 '''====================================================词典列表===================================================='''
 
 dict_list = [
@@ -513,7 +534,7 @@ dict_list = [
         'style-file': 'moji-panel.css',
         'anki-add-note': moji_add_anki_note,
         'anki-create-deck-and-model': moji_create_deck_and_model_if_not_exists
-    }
+    },
 ]
 
 
@@ -532,9 +553,11 @@ class Dicts:
         self.all_dict = []
         self.on_dict = []
         for d in dict_list:
-            name = d.get('name')
             able = d.get('able', False)
-            on = able and self.dict_settings.get(name, {}).get("on", False)
+            if not able:
+                continue
+            name = d.get('name')
+            on = self.dict_settings.get(name, {}).get("on", False)
             title = d.get('title')
             support_lang = d.get('support-lang', ALL_LANG)  # 默认支持所有语言
             icon = d.get('icon')
@@ -544,11 +567,48 @@ class Dicts:
             style_file = d.get('style-file', None)
             anki_add_note_func = d.get('anki-add-note', None)
             anki_create_deck_and_model_func = d.get('anki-create-deck-and-model', None)
-            dictionary = Dict(name, able, on, title, support_lang, icon, audio_icon, template, func, style_file,
+            dictionary = Dict(name, on, title, support_lang, icon, audio_icon, template, func, style_file, None,
                               anki_add_note_func, anki_create_deck_and_model_func)
             self.all_dict.append(dictionary)
             if on:
                 self.on_dict.append(dictionary)
+
+        mdict_list_dir = os.path.join(utils.get_app_dir_path(), 'mdict')
+        if os.path.isdir(mdict_list_dir):
+            for mdict_dir in os.listdir(mdict_list_dir):
+                mdict_abs_dir = os.path.join(mdict_list_dir, mdict_dir)
+                config_file_path = os.path.join(mdict_abs_dir, 'config.json')
+                if os.path.exists(config_file_path):
+                    with open(config_file_path, encoding='utf-8') as f:
+                        config = json.loads(f.read())
+                        f.close()
+                    if not config.get('able', False):
+                        continue
+                    lang = config.get('lang', None)
+                else:
+                    lang = None
+                if not lang:
+                    support_lang = ALL_LANG
+                else:
+                    support_lang = [Lang(lan) for lan in lang]
+
+                mdx_file = utils.get_one_file_by_suffix(mdict_abs_dir, 'mdx')
+                if not mdx_file:
+                    continue
+                name = mdict_dir
+                on = self.dict_settings.get(name, {}).get("on", False)
+                logo = utils.get_one_file_by_suffix(mdict_abs_dir, 'jpg', 'png', 'jpeg')
+                style = utils.get_one_file_by_suffix(mdict_abs_dir, 'css')
+                if style:
+                    style = style.replace(os.sep, '/')
+
+                js = utils.get_one_file_by_suffix(mdict_abs_dir, 'js')
+                if js:
+                    js = js.replace(os.sep, '/')
+                mdict = Mdict(name, on, support_lang, logo, mdx_file, style, js)
+                self.all_dict.append(mdict)
+                if on:
+                    self.on_dict.append(mdict)
 
     def setOn(self, index: int, on: bool):
         dict_name = self.all_dict[index].name
@@ -560,11 +620,10 @@ class Dicts:
 
 
 class Dict:
-    def __init__(self, name: str, able: bool, on: bool, title: str, support_lang: list, icon: str,
-                 audio_icon: str = None, template: str = None, func=None, style_file: str = None,
+    def __init__(self, name: str, on: bool, title: str, support_lang: list, icon: str, audio_icon: str = None,
+                 template: str = None, func=None, style_file: str = None, js_file: str = None,
                  anki_add_note_func=None, anki_create_deck_and_model=None):
         self.name = name
-        self.able = able
         self.on = on
         self.title = title
         self.support_lang = support_lang
@@ -573,6 +632,7 @@ class Dict:
         self.template = template
         self.func = func
         self.style_file = style_file
+        self.js_file = js_file
         self.anki_add_note_func = anki_add_note_func
         self.anki_create_deck_and_model_func = anki_create_deck_and_model
 
@@ -580,10 +640,8 @@ class Dict:
     def message_result(cls, text: str = ''):
         return {'message': text}
 
-    def do_trans(self, text, from_lang) -> dict:
-        if not self.able or self.func is None:
-            return self.message_result('该词典暂不可用')
-        if from_lang not in self.support_lang:
+    def do_trans(self, text, from_lang: Lang) -> dict:
+        if from_lang is not Lang.AUTO and from_lang not in self.support_lang:
             return self.message_result('该词典不支持该语言')
 
         return self.func(text, from_lang)
@@ -603,6 +661,51 @@ class Dict:
             return '无法连接AnkiConnect, 请确认Anki已启动并重试'
         except Exception as err:
             return str(err)
+
+
+class Mdict(Dict):
+    def __init__(self, name: str, on: bool, support_lang: list, logo_path: str, mdx_path: str,
+                 style_path: str = None, js_path: str = None):
+        self.builder = IndexBuilder(mdx_path)
+        super().__init__(name, on, name, support_lang, logo_path, template='mdict-panel.html', func=self.dict_search,
+                         style_file=style_path, js_file=js_path)
+
+    def dict_search(self, text: str, from_lang: Lang):
+        results = self.builder.mdx_lookup(text)
+        if not results:
+            return {}
+
+        results_html = '\n<br>\n'.join(results)
+
+        def repl(m: re.Match):
+            word = m.groups()[0]
+            return f'<a href="entry://{word}">{word}</a>'
+
+        results_html = re.sub('@@@LINK=(((?!\s*@@@LINK=).)*)', repl, results_html)
+
+        soup = BeautifulSoup(results_html, 'html.parser')
+        img_list = soup.findAll('img')
+        soup.find()
+        for img in img_list:
+            if not img.has_attr('src'):
+                continue
+            src = img.attrs.get('src')
+
+            keyword = '\\' + src.replace('../', '', 1).replace('/', '\\')
+            content = self.resource_search(keyword)
+            if content:
+                tmp_filename = self.name + keyword.replace('\\', '_')
+                file_path = utils.store_tmp_file(tmp_filename, content)
+                img['src'] = file_path
+        results_html = soup.prettify()
+
+        return {'results': results_html}
+
+    def resource_search(self, keyword):
+        results = self.builder.mdd_lookup(keyword)
+        if not results:
+            return None
+        return results[0]
 
 
 # 用于获取所有词典和已开启词典列表

@@ -4,8 +4,8 @@
 **/__pycache__
 /venv
 /tmp
+/mdict/*
 *.spec
 test*.*
-config.json
+/config.json
 .gitignore
-TODO.txt

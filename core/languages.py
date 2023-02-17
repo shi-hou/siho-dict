@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class Lang(str, Enum):
+    AUTO = 'auto'
+    '''自动'''
+
     ZH = 'zh'
     '''中文'''
 
@@ -12,4 +15,4 @@ class Lang(str, Enum):
     '''日语'''
 
 
-ALL_LANG = [lang for lang in Lang]
+ALL_LANG = [lang for lang in Lang if lang is not Lang.AUTO]

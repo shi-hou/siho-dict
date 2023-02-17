@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import shutil
@@ -40,6 +41,16 @@ def read_asset_file(*file_path: str) -> str:
     return result_txt
 
 
+def get_one_file_by_suffix(target_dir: str, *target_suffix: str):
+    paths = []
+    for suffix in target_suffix:
+        paths.extend(glob.glob(os.path.join(target_dir, '*.' + suffix)))
+    if paths:
+        return paths[0]
+    else:
+        return None
+
+
 AUTO_RUN_NAME = 'SihoDict-' + TAG
 
 
@@ -79,12 +90,18 @@ def check_language(string: str) -> Lang:
     return Lang(langid.classify(string)[0])
 
 
-def store_tmp_file(filename: str, url: str) -> str:
+def store_tmp_file(filename: str, file) -> str:
     tmp_dir_path = os.path.join(get_app_dir_path(), 'tmp')
     os.makedirs(tmp_dir_path, exist_ok=True)
     file_path = os.path.join(tmp_dir_path, filename)
     if not os.path.exists(file_path):
-        content = request_get(url).content
+        _type = type(file)
+        if _type == str:
+            content = request_get(file).content
+        elif _type == bytes:
+            content = file
+        else:
+            raise Exception('file类型应为str或bytes')
         with open(file_path, 'wb') as f:
             f.write(content)
             f.close()

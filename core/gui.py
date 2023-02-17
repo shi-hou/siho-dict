@@ -3,12 +3,12 @@ import re
 import sys
 import traceback
 import webbrowser
+from urllib.parse import unquote
 
 import mouse
 import requests
-from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl, QPropertyAnimation, \
-    QSize, QEasingCurve, pyqtProperty
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent, QClipboard, QShowEvent, QHideEvent
+from PyQt5.QtCore import Qt, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QPoint, QRect, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices, QWheelEvent, QClipboard
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineSettings, QWebEngineView
@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
 
         @self.tray_icon.menu_open_setting_act.triggered.connect
         def show_setting_window():
+            self.setting_window.setting_page.verticalScrollBar().setValue(0)
             self.setting_window.show()
             self.setting_window.activateWindow()
 
@@ -142,7 +143,7 @@ class TransWindow(BaseWindow):
             self.move(x, y)
         self.show()
         if has_content:
-            self.result_list_widget.loading()
+            self.result_list_widget.setLoading(True)
             self.trans_loaders = []
             lang = utils.check_language(input_text)
             for trans_widget in self.result_list_widget.widget_list:
@@ -234,6 +235,7 @@ class TransWindow(BaseWindow):
 class SettingWindow(FramelessMainWindow):
     def __init__(self):
         super().__init__()
+        self.setting_page = IPage()
         self.hotkey_edit = ILineEdit()
         self.dict_switch_list = []
         self.init()
@@ -247,8 +249,7 @@ class SettingWindow(FramelessMainWindow):
         self.setMinimumWidth(550)
 
         config = utils.get_config()
-        setting_page = IPage()
-        self.setCentralWidget(setting_page)
+        self.setCentralWidget(self.setting_page)
 
         basic_setting_group = IGroup('基础设置')
         auto_run_switch = ISwitch(on=utils.get_auto_run())
@@ -262,18 +263,17 @@ class SettingWindow(FramelessMainWindow):
         self.hotkey_edit.setText(config.get('hotkey', 'Ctrl+Alt+Z'))
         basic_setting_group.addRow('热键', self.hotkey_edit)
 
-        setting_page.addWidget(basic_setting_group)
+        self.setting_page.addWidget(basic_setting_group)
 
         dict_setting_group = IGroup('词典设置')
         for i, d in enumerate(dicts.all_dict):
             switch = ISwitch(on=d.on)
             switch.setProperty('index', i)
-            switch.setEnabled(d.able)
             self.dict_switch_list.append(switch)
 
             dict_setting_group.addRow(d.title, switch, d.icon)
 
-        setting_page.addWidget(dict_setting_group)
+        self.setting_page.addWidget(dict_setting_group)
 
         anki_setting_group = IGroup('Anki Connect', '点击“检查Anki Connect”将创建已开启的词典的Anki牌组和模板, 若同名的牌组和模板已存在则忽略')
 
@@ -324,7 +324,7 @@ class SettingWindow(FramelessMainWindow):
 
         anki_setting_group.addButton('检查Anki Connect', create_anki_deck_and_model)
 
-        setting_page.addWidget(anki_setting_group)
+        self.setting_page.addWidget(anki_setting_group)
 
         tmp_file_group = IGroup('缓存设置')
 
@@ -347,7 +347,7 @@ class SettingWindow(FramelessMainWindow):
         clear_tmp_btn = tmp_file_group.addButton('清理缓存', clear_tmp_file)
         load_tmp_file_size()
 
-        setting_page.addWidget(tmp_file_group)
+        self.setting_page.addWidget(tmp_file_group)
 
         about_group = IGroup('关于')
         tag_label = ILineEdit(update.TAG)
@@ -370,9 +370,9 @@ class SettingWindow(FramelessMainWindow):
             webbrowser.open(update.GITHUB_URL)
 
         about_group.addButton('打开Github页面', open_github_page)
-        setting_page.addWidget(about_group)
+        self.setting_page.addWidget(about_group)
 
-        setting_page.addSpacing(100)
+        self.setting_page.addSpacing(100)
 
 
 class TrayIcon(QSystemTrayIcon):
@@ -404,9 +404,9 @@ class ResultViewListWidget(QWidget):
         self.layout.addStretch(1)
         self.setLayout(self.layout)
 
-    def loading(self):
+    def setLoading(self, loading: bool):
         for w in self.widget_list:
-            w.loading()
+            w.setLoading(loading)
 
     def clear(self):
         for w in self.widget_list:
@@ -428,22 +428,16 @@ class ResultViewListWidget(QWidget):
 
 
 class ResultViewWidget(QWidget):
-    trans_signal = pyqtSignal(dict)
 
     def __init__(self, dictionary: Dict):
         super().__init__()
         self.title_widget = QWidget()
+        self.loading_label = QLabel()
         self.fold_btn = QPushButton(QIcon(utils.get_asset_path('icon', 'left-outlined.svg')), '')
-        self.dictionary = dictionary
+        self.back_btn = QPushButton('←')
         self.layout = QVBoxLayout()
         self.trans_result_view = ResultView(dictionary, self)
-        self.thread_pool = QThreadPool()
-        self.thread_pool.setMaxThreadCount(1)
-        self.trans_signal.connect(self.setResult)
-        self.trans_loader = None
-        self.init()
 
-    def init(self):
         self.setAttribute(Qt.WA_StyledBackground)
 
         self.trans_result_view.hide()
@@ -453,17 +447,32 @@ class ResultViewWidget(QWidget):
         icon_label = QLabel()
         icon_label.setFixedHeight(15)
         icon_label.setFixedWidth(15)
-        icon = utils.get_asset_path('icon', self.dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
+        icon = utils.get_asset_path('icon', dictionary.icon).replace('\\', '/')  # url()用“\”会不生效
         icon_label.setStyleSheet(f'border-image: url({icon}); border-radius: 3px;')
         title_layout.addWidget(icon_label)
         title_layout.setContentsMargins(0, 0, 0, 0)
         self.title_widget.setLayout(title_layout)
 
-        title_label = QLabel(self.dictionary.title)
+        title_label = QLabel(dictionary.title)
         title_label.setProperty('class', 'title-label')
         title_layout.addWidget(title_label)
 
+        self.loading_label.setProperty('class', 'panel-fold-btn')
+        title_layout.addWidget(self.loading_label)
+
         title_layout.addStretch(1)
+
+        @self.back_btn.clicked.connect
+        def back_btn_on_click():
+            self.trans_result_view.history_list.pop()
+            word = self.trans_result_view.history_list[-1]
+            print('←', word, self.trans_result_view.history_list)
+            self.back_btn.setEnabled(len(self.trans_result_view.history_list) > 1)
+            self.do_trans(word, Lang.AUTO, False)
+
+        self.back_btn.setEnabled(False)
+        self.back_btn.setProperty('class', 'panel-fold-btn')
+        title_layout.addWidget(self.back_btn)
 
         @self.fold_btn.clicked.connect
         def fold_btn_on_click():
@@ -472,6 +481,7 @@ class ResultViewWidget(QWidget):
         self.fold_btn.setEnabled(False)
         self.fold_btn.setProperty('class', 'panel-fold-btn')
         title_layout.addWidget(self.fold_btn)
+
         self.layout.addWidget(self.title_widget)
 
         self.layout.addWidget(self.trans_result_view)
@@ -480,13 +490,11 @@ class ResultViewWidget(QWidget):
         self.layout.setSizeConstraint(QLayout.SetNoConstraint)
         self.setLayout(self.layout)
 
-    def do_trans(self, text: str, from_lang: Lang):
-        self.trans_loader = self.TransLoader(self.dictionary, self.trans_signal, text, from_lang)
-        self.thread_pool.start(self.trans_loader)
+    def do_trans(self, text: str, from_lang: Lang, reset_history: bool = True):
+        self.trans_result_view.do_trans(text, from_lang, reset_history)
 
     def stop_trans(self):
-        if self.trans_loader:
-            self.trans_loader.stop()
+        self.trans_result_view.stop_trans()
 
     @pyqtSlot(dict)
     def setResult(self, result_dict: dict):
@@ -496,8 +504,7 @@ class ResultViewWidget(QWidget):
             self.trans_result_view.setMessage(result_dict.get('message'))
         else:
             self.trans_result_view.setResult(result_dict)
-        self.fold_btn.setEnabled(True)
-        self.setFolded(False)
+        self.setLoading(False)
 
     def setFolded(self, isFolded):
         if isFolded:
@@ -506,50 +513,30 @@ class ResultViewWidget(QWidget):
             self.fold_btn.setIcon(QIcon(utils.get_asset_path('icon', 'down-outlined.svg')))
         self.trans_result_view.setHidden(isFolded)
 
-    def loading(self):
-        self.fold_btn.setEnabled(False)
-        self.trans_result_view.hide()
-        # self.trans_result_view.setMessage('加载中...')
+    def setLoading(self, loading: bool):
+        self.fold_btn.setEnabled(not loading)
+        self.setFolded(loading)
+        if loading:
+            self.loading_label.setText('...')
+        else:
+            self.loading_label.setText('')
 
     def clear(self):
         self.fold_btn.setEnabled(False)
         self.trans_result_view.setMessage('')
 
-    class TransLoader(QRunnable):
-
-        def __init__(self, dictionary, trans_signal, text: str, from_lang: Lang):
-            super().__init__()
-            self.dictionary = dictionary
-            self.trans_signal = trans_signal
-            self.text = text
-            self.from_lang = from_lang
-            self.is_running = True
-
-        def run(self):
-            retries = 3
-            for i in range(retries):
-                if not self.is_running:
-                    return
-                try:
-                    result = self.dictionary.do_trans(self.text, self.from_lang)
-                    self.trans_signal.emit(result)
-                    return
-                except Exception:
-                    traceback.print_exc()
-            self.trans_signal.emit(Dict.message_result('翻译出现异常'))
-
-        def stop(self):
-            self.is_running = False
-
 
 class ResultView(QWebEngineView):
     result_signal = pyqtSignal(str, list)
     message_signal = pyqtSignal(str)
+    trans_signal = pyqtSignal(dict)
     anki_result_signal = pyqtSignal(str)
 
-    def __init__(self, dictionary: Dict, parent=None):
+    def __init__(self, dictionary: Dict, parent: ResultViewWidget):
         super().__init__(parent)
+        self.widget = parent
         self.dictionary = dictionary
+        self.history_list = []
         self.load_data_pattern = re.compile('\{\{[^\{\}]+?\}\}')
         self.script_label_pattern = re.compile('<script>[\s\S]+?</script>')
         self.audios = {}
@@ -557,10 +544,14 @@ class ResultView(QWebEngineView):
         self.voice_player = QMediaPlayer()
         self.last_play = ''
 
-        self.thread_pool = QThreadPool()
-        self.thread_pool.setMaxThreadCount(1)
-
+        self.anki_adder_thread_pool = QThreadPool()
+        self.anki_adder_thread_pool.setMaxThreadCount(1)
         self.anki_result_signal.connect(self.showAnkiAddResult)
+
+        self.trans_thread_pool = QThreadPool()
+        self.trans_thread_pool.setMaxThreadCount(1)
+        self.trans_loader = None
+        self.trans_signal.connect(parent.setResult)
 
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
         self.setPage(WebEnginePage(self))
@@ -569,7 +560,11 @@ class ResultView(QWebEngineView):
         self.page().setWebChannel(self.channel)
         self.channel.registerObject('Bridge', self)
         self.load(QUrl.fromLocalFile(utils.get_asset_path('search_panel.html')))
-        with open(utils.get_asset_path(dictionary.template), encoding="utf-8") as f:
+        if os.sep in dictionary.template:
+            template_file = dictionary.template
+        else:
+            template_file = utils.get_asset_path(dictionary.template)
+        with open(template_file, encoding="utf-8") as f:
             self.template = f.read()
             f.close()
         self.sound_icon = dictionary.audio_icon
@@ -578,17 +573,40 @@ class ResultView(QWebEngineView):
         def load_finished(ok: bool):
             # 加载CSS文件
             if ok:
+                if '/' not in dictionary.style_file:
+                    css_path = f"css/{dictionary.style_file}"
+                else:
+                    css_path = dictionary.style_file
                 self.page().runJavaScript(f'''
                             new_element = document.createElement("link");
                             new_element.setAttribute("rel", "stylesheet");
                             new_element.setAttribute("type", "text/css");
-                            new_element.setAttribute("href", "css/{dictionary.style_file}");
+                            new_element.setAttribute("href", "{css_path}");
                             document.head.appendChild(new_element);
                         ''')
 
     # 使鼠标光标停在网页内时可以进行滚动
     def wheelEvent(self, event: QWheelEvent) -> None:
         self.nativeParentWidget().page.wheelEvent(event)
+
+    @pyqtSlot(str)
+    def mdictLinkOnClick(self, link: str) -> bool:
+        url = unquote(link)
+        if url.startswith('entry://'):
+            text = url[len('entry://'):]
+            self.do_trans(text, Lang.AUTO, False)
+            return False
+        elif url.startswith('sound://'):
+            keyword = '\\' + url[len('sound://'):].replace('/', '\\')
+            filename = self.dictionary.name + keyword.replace('\\', '_')
+            content = self.dictionary.resource_search(keyword)
+            if content:
+                file_path = utils.store_tmp_file(filename, content)
+                self.voice_player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))
+                self.last_play = filename
+                self.voice_player.play()
+
+        return True
 
     @pyqtSlot(str)
     def audioBtnOnclick(self, filename: str):
@@ -602,12 +620,30 @@ class ResultView(QWebEngineView):
     def setHeight(self, height: int):
         self.setFixedHeight(height)
 
+    def do_trans(self, text: str, from_lang: Lang, reset_history: bool = True):
+        self.stop_trans()
+        if reset_history:
+            self.history_list = []
+        else:
+            self.nativeParentWidget().page.verticalScrollBar().setValue(self.widget.y() - 10)
+        if text and (not self.history_list or text != self.history_list[-1]):
+            self.history_list.append(text)
+        print('history:', self.history_list)
+        self.widget.back_btn.setEnabled(len(self.history_list) > 1)
+        self.trans_loader = self.TransLoader(self.dictionary, self.trans_signal, text, from_lang)
+        self.trans_thread_pool.start(self.trans_loader)
+
+    def stop_trans(self):
+        if self.trans_loader:
+            self.trans_loader.stop()
+        self.trans_thread_pool.clear()
+
     def setResult(self, result: dict):
         self.current_data = result
         self.last_play = ''
         self.audios = {}
 
-        def loadData(m):
+        def loadData(m: re.Match):
             data_title = m.group()[2:-2]
             data = result.get(data_title, '')
 
@@ -642,6 +678,15 @@ class ResultView(QWebEngineView):
 
         body_html = self.load_data_pattern.sub(loadData, self.template)
         scripts = []
+        js_file = self.dictionary.js_file
+        if js_file:
+            if '/' not in js_file:
+                js_path = f"js/{js_file}"
+            else:
+                js_path = js_file
+            with open(js_path, encoding='utf-8') as f:
+                scripts.append(f.read())
+                f.close()
         for script_with_label in self.script_label_pattern.findall(body_html):
             script = script_with_label[8:-9]
             scripts.append(script)
@@ -660,7 +705,33 @@ class ResultView(QWebEngineView):
     def addAnkiNote(self):
         anki_note_adder = self.AnkiNoteAdder(self.anki_result_signal, self.dictionary,
                                              self.current_data)
-        self.thread_pool.start(anki_note_adder)
+        self.anki_adder_thread_pool.start(anki_note_adder)
+
+    class TransLoader(QRunnable):
+
+        def __init__(self, dictionary, trans_signal, text: str, from_lang: Lang):
+            super().__init__()
+            self.dictionary = dictionary
+            self.trans_signal = trans_signal
+            self.text = text
+            self.from_lang = from_lang
+            self.is_running = True
+
+        def run(self):
+            retries = 3
+            for i in range(retries):
+                if not self.is_running:
+                    return
+                try:
+                    result = self.dictionary.do_trans(self.text, self.from_lang)
+                    self.trans_signal.emit(result)
+                    return
+                except Exception:
+                    traceback.print_exc()
+            self.trans_signal.emit(Dict.message_result('翻译出现异常'))
+
+        def stop(self):
+            self.is_running = False
 
     class AnkiNoteAdder(QRunnable):
         def __init__(self, signal, dictionary: Dict, data: dict):
@@ -674,13 +745,14 @@ class ResultView(QWebEngineView):
 
 
 class WebEnginePage(QWebEnginePage):
-    def __init__(self, parent):
-        super(WebEnginePage, self).__init__(parent)
+    def __init__(self, parent: ResultView):
+        super().__init__(parent)
+        self.result_view = parent
 
     # 通过浏览器打开<a>链接
-    def acceptNavigationRequest(self, url: QUrl, type: 'QWebEnginePage.NavigationType',
+    def acceptNavigationRequest(self, url: QUrl, _type: 'QWebEnginePage.NavigationType',
                                 isMainFrame: bool) -> bool:
-        if type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
+        if _type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
             QDesktopServices.openUrl(url)
             return False
         return True

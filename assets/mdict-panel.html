@@ -1,0 +1,12 @@
+<div>{{results}}</div>
+
+<script>
+    const as = document.getElementsByTagName('a')
+    for (let a of as) {
+        a.onclick = () => {
+            const result = window.Bridge.mdictLinkOnClick(a.href);
+            console.log(result)
+            return false
+        }
+    }
+</script>
