@@ -434,23 +434,6 @@ def moji_create_deck_and_model_if_not_exists() -> (str, str):
 # </editor-fold>
 
 
-'''=========================================超級クラウン中日辞典/クラウン日中辞典========================================='''
-
-
-# <editor-fold desc="超級クラウン中日辞典/クラウン日中辞典">
-
-def crown_dict_search(text: str, _) -> dict:
-    cj_html_list, jc_html_list = Crown.dict_search(text)
-    if not (cj_html_list or jc_html_list):
-        return {}
-    return {
-        'cj': '\n'.join(cj_html_list),
-        'jc': '\n'.join(jc_html_list)
-    }
-
-
-# </editor-fold>
-
 '''====================================================词典列表===================================================='''
 
 dict_list = [
