@@ -47,8 +47,9 @@ package_cmd = 'pyinstaller ' \
               '-i "assets\icon\logo-icon.ico" ' \
               '-n "siho-dict" ' \
               f'--add-data "assets{os.pathsep}assets" ' \
+              f'--add-data "mdict{os.pathsep}mdict" ' \
               '--clean -y -w -D "entry.py"'
 
 if __name__ == '__main__':
-    print(os.system(upgrade_pyinstaller_cmd))
-    print(os.system(package_cmd))
+    os.system(upgrade_pyinstaller_cmd)
+    os.system(package_cmd)
