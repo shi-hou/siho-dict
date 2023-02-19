@@ -582,6 +582,17 @@ class Dicts:
                 self.all_dict.append(mdict)
 
         self.on_dict = [d for d in self.all_dict if d.on]
+        sorted_dict_names = setting.get('sorted_on_dict')
+        if sorted_dict_names:
+            self.sorted_on_dict = [self.get_dictionary_by_name(name) for name in sorted_dict_names]
+        else:
+            self.sorted_on_dict = self.on_dict
+
+    def get_dictionary_by_name(self, name: str):
+        for d in self.all_dict:
+            if d.name == name:
+                return d
+        return None
 
     def setOn(self, index: int, on: bool):
         dict_name = self.all_dict[index].name

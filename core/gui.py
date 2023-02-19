@@ -396,7 +396,7 @@ class ResultViewListWidget(QWidget):
         super().__init__()
         self.layout = QVBoxLayout()
         self.widget_list = []
-        for d in dicts.on_dict:
+        for d in dicts.sorted_on_dict:
             widget = ResultViewWidget(d)
             self.layout.addWidget(widget)
             self.widget_list.append(widget)
@@ -424,8 +424,10 @@ class ResultViewListWidget(QWidget):
         else:
             if on:
                 widget = ResultViewWidget(d)
-                self.layout.insertWidget(index, widget)
+                self.layout.insertWidget(len(self.widget_list), widget)
                 self.widget_list.append(widget)
+        dicts.sorted_on_dict = [widget.trans_result_view.dictionary.name for widget in self.widget_list]
+        setting.set('sorted_on_dict', dicts.sorted_on_dict)
 
 
 class ResultViewWidget(QWidget):
