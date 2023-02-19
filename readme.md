@@ -60,6 +60,7 @@ python entry.py
 
 ## TODO
 
+- 将翻译窗口改成单个QWebEngineView
 - 重置设置管理和设置界面
 - 悬浮图标翻译
 - 词典顺序设置

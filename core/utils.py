@@ -66,26 +66,6 @@ def set_auto_run(new_value: bool):
         auto_starter.remove(AUTO_RUN_NAME)
 
 
-def get_config():
-    try:
-        config_file = os.path.join(get_app_dir_path(), 'config.json')
-        with open(config_file, 'r') as f:
-            config = json.loads(f.read())
-        if not config:
-            config = {}
-    except IOError:
-        config = {}
-    return config
-
-
-def update_config(config: dict):
-    origin = get_config()
-    origin.update(config)
-    config_file = os.path.join(get_app_dir_path(), 'config.json')
-    with open(config_file, 'w') as f:
-        json.dump(origin, f, sort_keys=True, indent=2)
-
-
 def check_language(string: str) -> Lang:
     return Lang(langid.classify(string)[0])
 

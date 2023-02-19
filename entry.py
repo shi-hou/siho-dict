@@ -13,6 +13,7 @@ from pyqtkeybind import keybinder
 from core import utils
 from core.gui import MainWindow
 from core.languages import ALL_LANG
+from core.setting import setting
 
 
 class WinEventFilter(QAbstractNativeEventFilter):
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     window = MainWindow()
     keybinder.init()
     unregistered = False
-    hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
+    hotkey = setting.get('hotkey', 'Ctrl+Alt+Z').lower()
     keybinder.register_hotkey(window.winId(), hotkey, window.trans_window.on_hotkey)
     win_event_filter = WinEventFilter(keybinder)
     event_dispatcher = QAbstractEventDispatcher.instance()
@@ -64,4 +65,4 @@ if __name__ == '__main__':
     window.tray_icon.showMessage('启动成功', f'按下快捷键{hotkey}进行翻译', QSystemTrayIcon.MessageIcon.NoIcon, 5000)
 
     app.exec_()
-    keybinder.unregister_hotkey(window.winId(), utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
+    keybinder.unregister_hotkey(window.winId(), setting.get('hotkey', 'Ctrl+Alt+Z').lower())

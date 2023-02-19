@@ -1,12 +1,12 @@
 from core import utils
+from core.setting import setting
 
 
 class Anki:
     @classmethod
     def invoke(cls, action, **params):
-        config = utils.get_config()
-        url = f"http://{config.get('anki-address', '127.0.0.1')}:{config.get('anki-port', '8765')}"
-        key = config.get('anki-key', None)
+        url = f"http://{setting.get('anki-address', '127.0.0.1')}:{setting.get('anki-port', '8765')}"
+        key = setting.get('anki-key', None)
         response = utils.request_post(url, json={
             'action': action,
             'params': params,

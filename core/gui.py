@@ -20,6 +20,7 @@ from qframelesswindow import FramelessMainWindow
 from core import utils, update
 from core.dicts import Dict, dicts
 from core.languages import Lang
+from core.setting import setting
 from core.widgets import BaseWindow, IPage, ILineEdit, IGroup, ISwitch, IMenu, IToast
 
 
@@ -39,11 +40,11 @@ class MainWindow(QMainWindow):
         @self.setting_window.hotkey_edit.editingFinished.connect
         def change_hotkey():
             if self.setting_window.hotkey_edit.isModified():
-                original_hotkey = utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower()
+                original_hotkey = setting.get('hotkey', 'Ctrl+Alt+Z').lower()
                 new_hotkey = self.setting_window.hotkey_edit.text().lower()
                 keybinder.unregister_hotkey(self.winId(), original_hotkey)
                 keybinder.register_hotkey(self.winId(), new_hotkey, self.trans_window.on_hotkey)
-                utils.update_config({'hotkey': new_hotkey})
+                setting.set('hotkey', new_hotkey)
 
         @self.tray_icon.menu_open_trans_act.triggered.connect
         def menu_open_trans_act_triggered():
@@ -65,8 +66,7 @@ class MainWindow(QMainWindow):
         toggled_switch = self.setting_window.sender()
         index = toggled_switch.property('index')
         on = toggled_switch.isToggled()
-        dicts.setOn(index, on)
-        self.trans_window.result_list_widget.reset()
+        self.trans_window.result_list_widget.setOn(index, on)
 
 
 class TransWindow(BaseWindow):
@@ -198,7 +198,7 @@ class TransWindow(BaseWindow):
                     former_copy = pyperclip.paste()  # 用于还原剪切板
                     timestamp = str(time())
                     pyperclip.copy(timestamp)
-                    keyboard.release(utils.get_config().get('hotkey', 'Ctrl+Alt+Z').lower())
+                    keyboard.release(setting.get('hotkey', 'Ctrl+Alt+Z').lower())
                     keyboard.send('ctrl+c')
                     sleep(.1)
                     current_txt = pyperclip.paste().replace('\r\n', '\n')
@@ -248,7 +248,6 @@ class SettingWindow(FramelessMainWindow):
         self.resize(800, 500)
         self.setMinimumWidth(550)
 
-        config = utils.get_config()
         self.setCentralWidget(self.setting_page)
 
         basic_setting_group = IGroup('基础设置')
@@ -260,7 +259,7 @@ class SettingWindow(FramelessMainWindow):
 
         basic_setting_group.addRow('开机自启', auto_run_switch)
 
-        self.hotkey_edit.setText(config.get('hotkey', 'Ctrl+Alt+Z'))
+        self.hotkey_edit.setText(setting.get('hotkey', 'Ctrl+Alt+Z'))
         basic_setting_group.addRow('热键', self.hotkey_edit)
 
         self.setting_page.addWidget(basic_setting_group)
@@ -277,21 +276,21 @@ class SettingWindow(FramelessMainWindow):
 
         anki_setting_group = IGroup('Anki Connect', '点击“检查Anki Connect”将创建已开启的词典的Anki牌组和模板, 若同名的牌组和模板已存在则忽略')
 
-        anki_on_switch = ISwitch(on=config.get('anki-on', False))
-        anki_on_switch.toggled.connect(lambda: utils.update_config({'anki-on': anki_on_switch.isToggled()}))
+        anki_on_switch = ISwitch(on=setting.get('anki-on', False))
+        anki_on_switch.toggled.connect(lambda: setting.set('anki-on', anki_on_switch.isToggled()))
         anki_setting_group.addRow('开启', anki_on_switch, 'anki.png')
 
-        anki_address_input = ILineEdit(config.get('anki-address', '127.0.0.1'))
+        anki_address_input = ILineEdit(setting.get('anki-address', '127.0.0.1'))
         anki_address_input.editingFinished.connect(
-            lambda: utils.update_config({'anki-address': anki_address_input.text()}))
+            lambda: setting.set('anki-address', anki_address_input.text()))
         anki_setting_group.addRow('地址', anki_address_input)
 
-        anki_port_input = ILineEdit(config.get('anki-port', '8765'))
-        anki_port_input.editingFinished.connect(lambda: utils.update_config({'anki-port': anki_port_input.text()}))
+        anki_port_input = ILineEdit(setting.get('anki-port', '8765'))
+        anki_port_input.editingFinished.connect(lambda: setting.set('anki-port', anki_port_input.text()))
         anki_setting_group.addRow('端口', anki_port_input)
 
-        anki_key_input = ILineEdit(config.get('anki-key', ''))
-        anki_key_input.editingFinished.connect(lambda: utils.update_config({'anki-key': anki_key_input.text()}))
+        anki_key_input = ILineEdit(setting.get('anki-key', ''))
+        anki_key_input.editingFinished.connect(lambda: setting.set('anki-key', anki_key_input.text()))
         anki_setting_group.addRow('Key', anki_key_input)
 
         for dictionary in dicts.all_dict:
@@ -300,17 +299,17 @@ class SettingWindow(FramelessMainWindow):
                 dict_title = dictionary.title
                 deck_name_config_key = f'anki-{dict_name}-deck'
                 model_name_config_key = f'anki-{dict_name}-model'
-                anki_deck_input = ILineEdit(config.get(deck_name_config_key, dict_name.title()))
+                anki_deck_input = ILineEdit(setting.get(deck_name_config_key, dict_name.title()))
                 anki_deck_input.editingFinished.connect(
-                    lambda: utils.update_config({deck_name_config_key: anki_deck_input.text()}))
+                    lambda: setting.set(deck_name_config_key, anki_deck_input.text()))
                 anki_setting_group.addRow(f'{dict_title}牌组', anki_deck_input)
-                anki_model_input = ILineEdit(config.get(model_name_config_key, dict_name.title()))
+                anki_model_input = ILineEdit(setting.get(model_name_config_key, dict_name.title()))
                 anki_model_input.editingFinished.connect(
-                    lambda: utils.update_config({model_name_config_key: anki_model_input.text()}))
+                    lambda: setting.set(model_name_config_key, anki_model_input.text()))
                 anki_setting_group.addRow(f'{dict_title}笔记模板', anki_model_input)
 
-        anki_sync_switch = ISwitch(on=config.get('anki-auto-sync', False))
-        anki_sync_switch.toggled.connect(lambda: utils.update_config({'anki-auto-sync': anki_sync_switch.isToggled()}))
+        anki_sync_switch = ISwitch(on=setting.get('anki-auto-sync', False))
+        anki_sync_switch.toggled.connect(lambda: setting.set('anki-auto-sync', anki_sync_switch.isToggled()))
         anki_setting_group.addRow('添加笔记后自动同步', anki_sync_switch)
 
         def create_anki_deck_and_model():
@@ -412,19 +411,21 @@ class ResultViewListWidget(QWidget):
         for w in self.widget_list:
             w.clear()
 
-    def reset(self):
-        """
-        在修改了词典开关后执行该方法
-        重置翻译窗口显示的词典
-        """
-        for widget in self.widget_list:
-            self.layout.removeWidget(widget)
-            widget.deleteLater()
-        self.widget_list = []
-        for index, d in enumerate(dicts.on_dict):
-            widget = ResultViewWidget(d)
-            self.layout.insertWidget(index, widget)
-            self.widget_list.append(widget)
+    def setOn(self, index: int, on: bool):
+        dicts.setOn(index, on)
+        d = dicts.all_dict[index]
+        dict_name = d.name
+        for i, widget in enumerate(self.widget_list):
+            if widget.trans_result_view.dictionary.name == dict_name and not on:
+                self.widget_list.remove(widget)
+                self.layout.removeWidget(widget)
+                widget.deleteLater()
+                break
+        else:
+            if on:
+                widget = ResultViewWidget(d)
+                self.layout.insertWidget(index, widget)
+                self.widget_list.append(widget)
 
 
 class ResultViewWidget(QWidget):
@@ -670,7 +671,7 @@ class ResultView(QWebEngineView):
 
             if data_title == 'anki-btn':
                 if result.get('support-anki') \
-                        and utils.get_config().get('anki-on', False) and self.dictionary.is_anki_able():
+                        and setting.get('anki-on', False) and self.dictionary.is_anki_able():
                     return f'''
                             <a class="anki-btn" href="#" onclick="addAnkiNote()" 
                                 style="text-decoration: none; display: inline-flex; vertical-align: middle;">

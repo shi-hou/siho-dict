@@ -10,6 +10,7 @@ from sihodictapi import *
 from core import utils
 from core.anki import Anki
 from core.languages import ALL_LANG, Lang
+from core.setting import setting
 from mdict_query import IndexBuilder
 
 '''====================================================有道词典===================================================='''
@@ -105,12 +106,10 @@ def youdao_add_anki_note(data: dict) -> str:
 
 
 def youdao_create_deck_and_model_if_not_exists() -> (str, str):
-    config = utils.get_config()
-
-    deck_name = config.get('anki-youdao-deck', 'Youdao')
+    deck_name = setting.get('anki-youdao-deck', 'Youdao')
     Anki.create_deck_if_not_exists(deck_name)
 
-    model_name = config.get('anki-youdao-model', 'Youdao')
+    model_name = setting.get('anki-youdao-model', 'Youdao')
     if not Anki.is_model_existing(model_name):
         fields = ['return-phrase', 'speech', 'ukphone', 'ukspeech', 'usphone', 'usspeech', 'trans_html', 'exam_type']
 
@@ -404,12 +403,10 @@ def moji_add_anki_note(data: dict) -> str:
 
 
 def moji_create_deck_and_model_if_not_exists() -> (str, str):
-    config = utils.get_config()
-
-    deck_name = config.get('anki-moji-deck', 'Moji')
+    deck_name = setting.get('anki-moji-deck', 'Moji')
     Anki.create_deck_if_not_exists(deck_name)
 
-    model_name = config.get('anki-moji-model', 'Moji')
+    model_name = setting.get('anki-moji-model', 'Moji')
     if not Anki.is_model_existing(model_name):
         fields = ['title', 'note', 'target_id', 'target_type', 'spell', 'accent', 'pron', 'excerpt', 'sound', 'link',
                   'part_of_speech', 'trans', 'examples']
@@ -528,12 +525,8 @@ class Dicts:
     def __init__(self):
         self.all_dict = []
         self.on_dict = []
-        self.dict_settings = utils.get_config().get('dict', {dict_list[0]['name']: {'on': True}})
-        self.resetDict()
-
-    def resetDict(self):
+        self.dict_settings = setting.get('dict', {dict_list[0]['name']: {'on': True}})
         self.all_dict = []
-        self.on_dict = []
         for d in dict_list:
             able = d.get('able', False)
             if not able:
@@ -552,8 +545,6 @@ class Dicts:
             dictionary = Dict(name, on, title, support_lang, icon, audio_icon, template, func, style_file, None,
                               anki_add_note_func, anki_create_deck_and_model_func)
             self.all_dict.append(dictionary)
-            if on:
-                self.on_dict.append(dictionary)
 
         mdict_list_dir = os.path.join(utils.get_app_dir_path(), 'mdict')
         if os.path.isdir(mdict_list_dir):
@@ -589,16 +580,17 @@ class Dicts:
                     js = js.replace(os.sep, '/')
                 mdict = Mdict(name, on, support_lang, logo, mdx_file, style, js)
                 self.all_dict.append(mdict)
-                if on:
-                    self.on_dict.append(mdict)
+
+        self.on_dict = [d for d in self.all_dict if d.on]
 
     def setOn(self, index: int, on: bool):
         dict_name = self.all_dict[index].name
         one_dict_setting = self.dict_settings.get(dict_name, {})
         one_dict_setting['on'] = on
         self.dict_settings[dict_name] = one_dict_setting
-        utils.update_config({'dict': self.dict_settings})
-        self.resetDict()
+        setting.set('dict', self.dict_settings)
+        self.all_dict[index].on = on
+        self.on_dict = [d for d in self.all_dict if d.on]
 
 
 class Dict:
@@ -636,7 +628,7 @@ class Dict:
             return '暂不支持将该单词添加到Anki'
         try:
             result_txt = self.anki_add_note_func(data)
-            if utils.get_config().get('anki-auto-sync', False):
+            if result_txt == '添加成功' and setting.get('anki-auto-sync', False):
                 Anki.sync()
             return result_txt
         except requests.exceptions.ConnectionError:
