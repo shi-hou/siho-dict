@@ -30,7 +30,7 @@ from .pureSalsa20 import Salsa20
 import zlib
 # LZO compression is used for engine version < 2.0
 try:
-    import sihodictapi.mdict_query.lzo
+    import mdict_query.lzo
 except ImportError:
     lzo = None
     print("LZO compression support is not available")

@@ -138,6 +138,20 @@ def google_trans(text, _) -> dict:
 
 # </editor-fold>
 
+
+'''===================================================CNKI翻译助手==================================================='''
+
+
+# <editor-fold desc="CNKI翻译助手">
+
+def cnki_trans(text, _) -> dict:
+    trans_text = Cnki.translate(text).get('data').get('mResult')
+    return {'trans': trans_text}
+
+
+# </editor-fold>
+
+
 '''====================================================百度翻译===================================================='''
 
 
@@ -455,6 +469,15 @@ dict_list = [
         'template': 'common-trans-panel.html',
         'style-file': 'common-trans-panel.css',
         'func': google_trans,
+    },
+{
+        'name': 'cnki-trans',
+        'able': True,
+        'title': 'CNKI翻译助手',
+        'icon': 'cnki_logo.png',
+        'template': 'common-trans-panel.html',
+        'style-file': 'common-trans-panel.css',
+        'func': cnki_trans,
     },
     {
         'name': 'baidu',
